@@ -1,0 +1,62 @@
+.neo-map-marker {
+  background: transparent;
+  border: none;
+}
+
+.neo-map-marker span {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.35);
+}
+
+.neo-map--operational {
+  filter: saturate(1.08) contrast(1.04);
+}
+
+.neo-map-popup strong {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.neo-map-popup p {
+  margin: 0 0 0.375rem;
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+
+.neo-map-popup small {
+  color: #64748b;
+}
+
+.neo-op-marker {
+  background: transparent;
+  border: none;
+}
+
+.neo-op-marker span {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.35);
+}
+
+.neo-op-marker--plant span {
+  background: #1e3a5f;
+}
+
+.neo-op-marker--site span {
+  background: #059669;
+}
+
+.leaflet-container {
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
