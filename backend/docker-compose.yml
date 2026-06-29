@@ -1,0 +1,520 @@
+x-service-common: &service-common
+
+  depends_on:
+
+    postgres:
+
+      condition: service_healthy
+
+    redis:
+
+      condition: service_healthy
+
+    rabbitmq:
+
+      condition: service_healthy
+
+  networks:
+
+    - neoalert-net
+
+  restart: unless-stopped
+
+
+
+x-healthcheck-defaults: &healthcheck-defaults
+
+  interval: 15s
+
+  timeout: 5s
+
+  retries: 5
+
+  start_period: 30s
+
+
+
+services:
+
+  postgres:
+
+    image: postgis/postgis:16-3.4-alpine
+
+    environment:
+
+      POSTGRES_USER: neoalert
+
+      POSTGRES_PASSWORD: neoalert
+
+      POSTGRES_DB: neoalert
+
+      NEOALERT_SCHEMA_ROOT: /schemas
+
+    ports:
+
+      - "5433:5432"
+
+    volumes:
+
+      - postgres_data:/var/lib/postgresql/data
+
+      - ./infrastructure/database/init:/docker-entrypoint-initdb.d:ro
+
+      - ./infrastructure/database/schemas:/schemas:ro
+
+    healthcheck:
+
+      test: ["CMD-SHELL", "pg_isready -U neoalert -d neoalert"]
+
+      interval: 5s
+
+      timeout: 5s
+
+      retries: 10
+
+      start_period: 30s
+
+    networks:
+
+      - neoalert-net
+
+
+
+  redis:
+
+    image: redis:7-alpine
+
+    ports:
+
+      - "6379:6379"
+
+    volumes:
+
+      - redis_data:/data
+
+    healthcheck:
+
+      test: ["CMD", "redis-cli", "ping"]
+
+      interval: 5s
+
+      timeout: 3s
+
+      retries: 5
+
+    networks:
+
+      - neoalert-net
+
+
+
+  rabbitmq:
+
+    image: rabbitmq:3.13-management-alpine
+
+    environment:
+
+      RABBITMQ_DEFAULT_USER: neoalert
+
+      RABBITMQ_DEFAULT_PASS: neoalert
+
+    ports:
+
+      - "5672:5672"
+
+      - "15672:15672"
+
+    volumes:
+
+      - rabbitmq_data:/var/lib/rabbitmq
+
+    healthcheck:
+
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+
+      interval: 10s
+
+      timeout: 5s
+
+      retries: 5
+
+      start_period: 30s
+
+    networks:
+
+      - neoalert-net
+
+
+
+  mailpit:
+
+    image: axllent/mailpit
+
+    ports:
+
+      - "1025:1025"
+
+      - "8025:8025"
+
+    networks:
+
+      - neoalert-net
+
+    restart: unless-stopped
+
+
+
+  api-gateway:
+
+    <<: *service-common
+
+    build:
+
+      context: .
+
+      dockerfile: services/api-gateway/Dockerfile
+
+    ports:
+
+      - "8000:8000"
+
+    environment:
+
+      APIGATEWAY_IDENTITY_SERVICE_URL: http://identity-service:8001
+      APIGATEWAY_CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,http://127.0.0.1:3000
+
+      APIGATEWAY_TENANT_SERVICE_URL: http://tenant-service:8002
+
+      APIGATEWAY_EMPLOYEE_SERVICE_URL: http://employee-service:8003
+
+      APIGATEWAY_ATTENDANCE_SERVICE_URL: http://attendance-service:8004
+
+      APIGATEWAY_LOCATION_SERVICE_URL: http://location-service:8005
+
+      APIGATEWAY_INCIDENT_SERVICE_URL: http://incident-service:8006
+
+      APIGATEWAY_FILE_INGESTION_SERVICE_URL: http://file-ingestion-service:8007
+
+      APIGATEWAY_TEMPLATE_CONFIGURATION_SERVICE_URL: http://template-configuration-service:8008
+
+      APIGATEWAY_NOTIFICATION_SERVICE_URL: http://notification-service:8009
+
+      APIGATEWAY_REPORTING_SERVICE_URL: http://reporting-service:8010
+
+      APIGATEWAY_AI_SERVICE_URL: http://ai-service:8011
+
+      APIGATEWAY_AUDIT_SERVICE_URL: http://audit-service:8012
+
+    healthcheck:
+
+      <<: *healthcheck-defaults
+
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/live')"]
+
+
+
+  identity-service:
+
+    <<: *service-common
+
+    build:
+
+      context: .
+
+      dockerfile: services/identity-service/Dockerfile
+
+    env_file:
+
+      - .env
+
+    ports:
+
+      - "8001:8001"
+
+    environment:
+
+      IDENTITYSERVICE_DATABASE_URL: postgresql+asyncpg://neoalert:neoalert@postgres:5432/identity_service
+
+      IDENTITYSERVICE_STORAGE_BACKEND: postgres
+
+      IDENTITYSERVICE_JWT_SECRET_KEY: change-me-in-production-use-32-chars-min
+
+      IDENTITYSERVICE_FRONTEND_URL: ${IDENTITYSERVICE_FRONTEND_URL:-${FRONTEND_URL:-http://localhost:5173}}
+
+      IDENTITYSERVICE_GOOGLE_CLIENT_ID: ${IDENTITYSERVICE_GOOGLE_CLIENT_ID:-${GOOGLE_CLIENT_ID:-}}
+
+      IDENTITYSERVICE_GOOGLE_CLIENT_SECRET: ${IDENTITYSERVICE_GOOGLE_CLIENT_SECRET:-${GOOGLE_CLIENT_SECRET:-}}
+
+      IDENTITYSERVICE_GOOGLE_REDIRECT_URI: ${IDENTITYSERVICE_GOOGLE_REDIRECT_URI:-${GOOGLE_REDIRECT_URI:-http://localhost:8001/auth/google/callback}}
+
+      IDENTITYSERVICE_AUTO_APPLY_SCHEMA: "true"
+
+      IDENTITYSERVICE_SCHEMA_DIR: /app/schemas/identity-service
+
+    healthcheck:
+
+      <<: *healthcheck-defaults
+
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health/live')"]
+
+
+
+  tenant-service:
+
+    <<: *service-common
+
+    build:
+
+      context: .
+
+      dockerfile: services/tenant-service/Dockerfile
+
+    ports:
+
+      - "8002:8002"
+
+    healthcheck:
+
+      <<: *healthcheck-defaults
+
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8002/health/live')"]
+
+
+
+  employee-service:
+
+    <<: *service-common
+
+    build:
+
+      context: .
+
+      dockerfile: services/employee-service/Dockerfile
+
+    ports:
+
+      - "8003:8003"
+
+    healthcheck:
+
+      <<: *healthcheck-defaults
+
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8003/health/live')"]
+
+
+
+  attendance-service:
+
+    <<: *service-common
+
+    build:
+
+      context: .
+
+      dockerfile: services/attendance-service/Dockerfile
+
+    ports:
+
+      - "8004:8004"
+
+    healthcheck:
+
+      <<: *healthcheck-defaults
+
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8004/health/live')"]
+
+
+
+  location-service:
+
+    <<: *service-common
+
+    build:
+
+      context: .
+
+      dockerfile: services/location-service/Dockerfile
+
+    ports:
+
+      - "8005:8005"
+
+    healthcheck:
+
+      <<: *healthcheck-defaults
+
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8005/health/live')"]
+
+
+
+  incident-service:
+
+    <<: *service-common
+
+    build:
+
+      context: .
+
+      dockerfile: services/incident-service/Dockerfile
+
+    ports:
+
+      - "8006:8006"
+
+    healthcheck:
+
+      <<: *healthcheck-defaults
+
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8006/health/live')"]
+
+
+
+  file-ingestion-service:
+
+    <<: *service-common
+
+    build:
+
+      context: .
+
+      dockerfile: services/file-ingestion-service/Dockerfile
+
+    ports:
+
+      - "8007:8007"
+
+    healthcheck:
+
+      <<: *healthcheck-defaults
+
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8007/health/live')"]
+
+
+
+  template-configuration-service:
+
+    <<: *service-common
+
+    build:
+
+      context: .
+
+      dockerfile: services/template-configuration-service/Dockerfile
+
+    ports:
+
+      - "8008:8008"
+
+    healthcheck:
+
+      <<: *healthcheck-defaults
+
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8008/health/live')"]
+
+
+
+  notification-service:
+
+    <<: *service-common
+
+    build:
+
+      context: .
+
+      dockerfile: services/notification-service/Dockerfile
+
+    ports:
+
+      - "8009:8009"
+
+    healthcheck:
+
+      <<: *healthcheck-defaults
+
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8009/health/live')"]
+
+
+
+  reporting-service:
+
+    <<: *service-common
+
+    build:
+
+      context: .
+
+      dockerfile: services/reporting-service/Dockerfile
+
+    ports:
+
+      - "8010:8010"
+
+    healthcheck:
+
+      <<: *healthcheck-defaults
+
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8010/health/live')"]
+
+
+
+  ai-service:
+
+    <<: *service-common
+
+    build:
+
+      context: .
+
+      dockerfile: services/ai-service/Dockerfile
+
+    ports:
+
+      - "8011:8011"
+
+    healthcheck:
+
+      <<: *healthcheck-defaults
+
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8011/health/live')"]
+
+
+
+  audit-service:
+
+    <<: *service-common
+
+    build:
+
+      context: .
+
+      dockerfile: services/audit-service/Dockerfile
+
+    ports:
+
+      - "8012:8012"
+
+    healthcheck:
+
+      <<: *healthcheck-defaults
+
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8012/health/live')"]
+
+
+
+networks:
+
+  neoalert-net:
+
+    driver: bridge
+
+
+
+volumes:
+
+  postgres_data:
+
+  redis_data:
+
+  rabbitmq_data:
+
+
