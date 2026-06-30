@@ -9,6 +9,11 @@ export default defineConfig({
   optimizeDeps: {
     include: ['leaflet', 'leaflet.heat', 'leaflet.markercluster'],
   },
+  preview: {
+    host: '0.0.0.0',
+    port: Number(process.env.PORT) || 4173,
+    strictPort: true,
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
