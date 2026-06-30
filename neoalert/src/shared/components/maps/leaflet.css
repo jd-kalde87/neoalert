@@ -1,0 +1,116 @@
+.neo-map-marker {
+  background: transparent;
+  border: none;
+}
+
+.neo-map-marker span {
+  display: block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.35);
+}
+
+.neo-map--operational {
+  filter: saturate(1.08) contrast(1.04);
+}
+
+.neo-map-popup strong {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.neo-map-popup p {
+  margin: 0 0 0.375rem;
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+
+.neo-map-popup small {
+  color: #64748b;
+}
+
+.neo-op-marker {
+  background: transparent;
+  border: none;
+}
+
+.neo-op-marker span {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.35);
+}
+
+.neo-op-marker--plant span {
+  background: #1e3a5f;
+}
+
+.neo-op-marker--site span {
+  background: #059669;
+}
+
+.leaflet-container {
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+/* Controles de zoom — esquina inferior derecha, separados de la leyenda */
+.neo-operative-map .leaflet-bottom.leaflet-right {
+  bottom: 1rem;
+  right: 1rem;
+  margin: 0;
+}
+
+.neo-operative-map .leaflet-control-zoom {
+  border: none !important;
+  border-radius: 0.75rem !important;
+  overflow: hidden;
+  box-shadow:
+    0 1px 2px rgb(15 23 42 / 0.06),
+    0 4px 16px rgb(15 23 42 / 0.1) !important;
+}
+
+.neo-operative-map .leaflet-control-zoom a {
+  width: 2.25rem !important;
+  height: 2.25rem !important;
+  line-height: 2.25rem !important;
+  font-size: 1.125rem !important;
+  font-weight: 600;
+  color: #334155 !important;
+  background: rgb(255 255 255 / 0.96) !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+.neo-operative-map .leaflet-control-zoom a:hover {
+  background: #f8fafc !important;
+  color: #0071e3 !important;
+}
+
+.neo-operative-map .leaflet-control-zoom-in {
+  border-radius: 0.75rem 0.75rem 0 0 !important;
+}
+
+.neo-operative-map .leaflet-control-zoom-out {
+  border-radius: 0 0 0.75rem 0.75rem !important;
+  border-bottom: none !important;
+}
+
+/* Separación visual entre barra de capas y etiquetas del mapa */
+.neo-operative-map .leaflet-container {
+  border-top: 1px solid #e2e8f0;
+}
+
+.neo-operative-map .leaflet-top.leaflet-left {
+  display: none;
+}
+
+.neo-operative-map .leaflet-top.leaflet-right .leaflet-control-attribution {
+  font-size: 0.625rem;
+}
