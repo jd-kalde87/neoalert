@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { MapContainer, Marker, Polyline, Popup, TileLayer, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import { useActiveOperationalData, usePrimaryPlant } from '@shared/hooks/useOperations'
-import { configureLeafletDefaults } from './leaflet-setup'
+import { configureLeafletDefaults, createIncidentPickerIcon } from './leaflet-setup'
 import 'leaflet/dist/leaflet.css'
 import './leaflet.css'
 
@@ -108,7 +108,7 @@ export function LocationPickerMap({ latitude, longitude, onChange }: LocationPic
         <OperationLayers />
         <PickHandler onChange={onChange} />
         {latitude != null && longitude != null ? (
-          <Marker position={[latitude, longitude]} />
+          <Marker position={[latitude, longitude]} icon={createIncidentPickerIcon()} />
         ) : null}
       </MapContainer>
       {latitude != null && longitude != null ? (

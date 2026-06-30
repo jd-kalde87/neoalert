@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 import { AlertCircle, Inbox, Loader2 } from 'lucide-react'
-import { cn } from '@shared/utils/cn'
 import { Button } from '@shared/components/ui/Button'
 
 interface FeedbackProps {

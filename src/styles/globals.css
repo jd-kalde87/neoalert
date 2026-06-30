@@ -23,13 +23,14 @@
   --shadow-panel: 0 1px 3px rgb(15 23 42 / 0.06), 0 1px 2px rgb(15 23 42 / 0.04);
   --shadow-elevated: 0 10px 40px -10px rgb(15 23 42 / 0.15);
 
-  --sidebar-width: 17rem;
-  --topbar-height: 3.5rem;
+  --sidebar-width: 12.5rem;
+  --sidebar-collapsed-width: 3.25rem;
+  --topbar-height: 2.75rem;
 }
 
 @layer base {
   html {
-    @apply scroll-smooth;
+    @apply scroll-smooth text-sm;
   }
 
   body {
@@ -113,11 +114,11 @@
   }
 
   .neo-table th {
-    @apply px-4 py-3 text-left text-[0.6875rem] font-semibold uppercase tracking-wider text-slate-500;
+    @apply px-3 py-2.5 text-left text-[0.6875rem] font-semibold uppercase tracking-wider text-slate-500;
   }
 
   .neo-table td {
-    @apply border-b border-slate-100 px-4 py-3 align-top text-slate-700;
+    @apply border-b border-slate-100 px-3 py-2.5 align-top text-slate-700;
   }
 
   .neo-table tbody tr {

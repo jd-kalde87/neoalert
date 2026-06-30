@@ -59,7 +59,9 @@ export function ImportTemplateCreatePage() {
       />
       <Card padding="lg">
         <TemplateForm
-          onSubmit={(payload) => createTemplate.mutateAsync(payload)}
+          onSubmit={async (payload) => {
+            await createTemplate.mutateAsync(payload)
+          }}
           isSubmitting={createTemplate.isPending}
         />
       </Card>
@@ -96,7 +98,9 @@ export function ImportTemplateEditPage() {
           {data ? (
             <TemplateForm
               initial={data}
-              onSubmit={(payload) => updateTemplate.mutateAsync(payload)}
+              onSubmit={async (payload) => {
+                await updateTemplate.mutateAsync(payload)
+              }}
               isSubmitting={updateTemplate.isPending}
             />
           ) : null}

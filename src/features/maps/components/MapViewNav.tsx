@@ -4,15 +4,13 @@ import { cn } from '@shared/utils/cn'
 
 export function MapViewNav() {
   return (
-    <nav className="mb-4 flex gap-2" aria-label="Vistas de mapa">
+    <nav className="flex gap-1 rounded-lg bg-slate-100 p-1" aria-label="Vistas de mapa">
       <NavLink
         to={ROUTES.maps}
         className={({ isActive }) =>
           cn(
-            'inline-flex min-h-[34px] items-center rounded-md border px-3 text-[0.8125rem] font-semibold no-underline',
-            isActive
-              ? 'border-accent bg-brand-50 text-blue-700'
-              : 'border-slate-200 bg-white text-slate-900',
+            'flex-1 rounded-md px-3 py-1.5 text-center text-xs font-semibold no-underline transition-colors',
+            isActive ? 'bg-white text-brand-900 shadow-sm' : 'text-slate-600 hover:text-slate-900',
           )
         }
       >
@@ -22,10 +20,8 @@ export function MapViewNav() {
         to={ROUTES.heatmap}
         className={({ isActive }) =>
           cn(
-            'inline-flex min-h-[34px] items-center rounded-md border px-3 text-[0.8125rem] font-semibold no-underline',
-            isActive
-              ? 'border-accent bg-brand-50 text-blue-700'
-              : 'border-slate-200 bg-white text-slate-900',
+            'flex-1 rounded-md px-3 py-1.5 text-center text-xs font-semibold no-underline transition-colors',
+            isActive ? 'bg-white text-brand-900 shadow-sm' : 'text-slate-600 hover:text-slate-900',
           )
         }
       >

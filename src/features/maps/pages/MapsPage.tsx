@@ -1,10 +1,7 @@
 import { useOutletContext } from 'react-router-dom'
-import { PageHeader } from '@shared/components/layout/PageHeader'
 import type { MapIncident, MapIncidentsSummary } from '@shared/types/map.types'
 import { HeatmapStatsPanel } from '../components/HeatmapStatsPanel'
 import { IncidentListPanel } from '../components/IncidentListPanel'
-import { MapViewNav } from '../components/MapViewNav'
-import { useMapStore } from '../stores/mapStore'
 
 interface MapsOutletContext {
   incidents: MapIncident[]
@@ -13,29 +10,30 @@ interface MapsOutletContext {
   selectIncident: (id: string | null) => void
 }
 
+function PanelHeader({ title, description }: { title: string; description: string }) {
+  return (
+    <header className="mb-4">
+      <h1 className="text-lg font-bold tracking-tight text-slate-900">{title}</h1>
+      <p className="mt-1 text-sm leading-relaxed text-slate-500">{description}</p>
+    </header>
+  )
+}
+
 export function MapsPage() {
   const { incidents, selectedIncidentId, selectIncident } =
     useOutletContext<MapsOutletContext>()
-  const layerMode = useMapStore((state) => state.layerMode)
 
   return (
-    <div>
-      <PageHeader
-        title="Mapa de rutas y riesgos"
-        description="Rutas planta → sitios de trabajo. Bloqueos, altercados y riesgos que impiden o dificultan el desplazamiento del personal."
+    <div className="flex flex-col gap-4">
+      <PanelHeader
+        title="Incidentes en ruta"
+        description="Seleccione un incidente en la lista o en el mapa. Use clic en el mapa para registrar uno nuevo."
       />
-
-      <MapViewNav />
       <IncidentListPanel
         incidents={incidents}
         selectedIncidentId={selectedIncidentId}
         onSelect={(id) => selectIncident(id)}
       />
-      {layerMode === 'heatmap' ? (
-        <p className="mt-3 text-[0.8125rem] text-slate-500">
-          Vista heatmap activa en el mapa.
-        </p>
-      ) : null}
     </div>
   )
 }
@@ -44,18 +42,18 @@ export function HeatmapPage() {
   const { summary } = useOutletContext<MapsOutletContext>()
 
   return (
-    <div>
-      <PageHeader
-        title="Mapa de calor — riesgos"
-        description="Densidad de incidentes de seguridad por corredor y nivel de riesgo."
+    <div className="flex flex-col gap-4">
+      <PanelHeader
+        title="Densidad de riesgos"
+        description="Concentración de incidentes por nivel de riesgo y corredores operativos planta → sitios."
       />
-
-      <MapViewNav />
 
       {summary ? (
         <HeatmapStatsPanel summary={summary} />
       ) : (
-        <p className="text-slate-500">Sin datos de densidad para mostrar.</p>
+        <p className="rounded-lg border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
+          Sin datos de densidad para los filtros seleccionados.
+        </p>
       )}
     </div>
   )

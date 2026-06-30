@@ -47,7 +47,10 @@ export function IncidentClusterLayer({
       })
 
       marker.bindPopup(buildPopup(incident))
-      marker.on('click', () => onSelectIncident(incident.id))
+      marker.on('click', (event) => {
+        L.DomEvent.stopPropagation(event)
+        onSelectIncident(incident.id)
+      })
       clusterGroup.addLayer(marker)
     })
 

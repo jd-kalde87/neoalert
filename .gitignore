@@ -1,6 +1,10 @@
 # Logs
 logs
 *.log
+
+# Mobile (proyecto separado en ../neoalert_movil)
+mobile/
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

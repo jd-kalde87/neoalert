@@ -22,6 +22,7 @@ export interface PaginatedResponse<T> {
 
 export interface GlobalFilters {
   tenantId?: string
+  plantId?: string
   zoneId?: string
   siteId?: string
   countryCode?: string

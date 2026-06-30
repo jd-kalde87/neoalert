@@ -1,11 +1,11 @@
-# NeoAlert
+# NeoAlert (Web)
 
-Plataforma enterprise omnicanal para operación de campo, supervisión, asistencia laboral, geolocalización, incidentes territoriales, mapas, notificaciones, cargue de archivos, auditoría y reportería.
+Plataforma enterprise para operación de campo, supervisión, asistencia laboral, geolocalización, incidentes territoriales, mapas, notificaciones, cargue de archivos, auditoría y reportería.
 
 ## Estado actual
 
-- **Web (React + TypeScript + Vite):** arquitectura feature-sliced implementada en `src/`.
-- **Móvil (Flutter):** en espera — ver `mobile/README.md`.
+- **Web (este repositorio):** React + TypeScript + Vite — arquitectura feature-sliced en `src/`.
+- **Móvil (proyecto separado):** Flutter en `C:\Users\SALUD PUBLICA\neoalert_movil` — ver `neoalert_movil/README.md`.
 
 ## Estructura
 
@@ -17,8 +17,7 @@ neoalert/
 │   ├── layouts/      # Shells de página
 │   ├── shared/       # Componentes, hooks, API, stores, tipos
 │   └── styles/       # Tokens y estilos globales
-├── mobile/           # Placeholder Flutter (Fase 2)
-├── docs/             # Documentación de arquitectura
+├── docs/             # Documentación de arquitectura y contratos API
 └── tests/            # Unit, integración, E2E
 ```
 
@@ -42,3 +41,13 @@ VITE_API_BASE_URL=/api
 ## Login de desarrollo
 
 El login actual es demostración local: cualquier usuario/contraseña no vacíos crea sesión mock y redirige al dashboard.
+
+## App móvil
+
+La aplicación Flutter vive en una carpeta hermana, no dentro de este proyecto:
+
+```
+C:\Users\SALUD PUBLICA\neoalert_movil
+```
+
+Ambos comparten dominio de negocio (incidentes, asistencia, mapas) y los mismos contratos API documentados en `docs/api-contracts/`.

@@ -29,9 +29,18 @@ const sourceOptions = REPORT_SOURCE_OPTIONS.map((source) => ({ value: source, la
 interface IncidentFormProps {
   onSubmit: (values: CreateIncidentFormValues) => Promise<void>
   isSubmitting?: boolean
+  initialLocation?: { latitude: number; longitude: number }
+  showLocationPicker?: boolean
+  compact?: boolean
 }
 
-export function IncidentForm({ onSubmit, isSubmitting = false }: IncidentFormProps) {
+export function IncidentForm({
+  onSubmit,
+  isSubmitting = false,
+  initialLocation,
+  showLocationPicker = true,
+  compact = false,
+}: IncidentFormProps) {
   const [submitError, setSubmitError] = useState<string | null>(null)
   const routeOptions = useRouteNameOptions()
   const siteOptions = useWorkSiteLabelOptions().map((site) => ({
@@ -54,8 +63,8 @@ export function IncidentForm({ onSubmit, isSubmitting = false }: IncidentFormPro
       severity: 'high',
       source: 'Jefe de área',
       location: '',
-      latitude: undefined,
-      longitude: undefined,
+      latitude: initialLocation?.latitude,
+      longitude: initialLocation?.longitude,
       blocksTransit: false,
       routeName: '',
       targetWorkSite: '',
@@ -88,7 +97,11 @@ export function IncidentForm({ onSubmit, isSubmitting = false }: IncidentFormPro
 
   return (
     <form className="neo-form-stack" onSubmit={handleFormSubmit}>
-      <div className="grid grid-cols-1 gap-4 min-[768px]:grid-cols-2">
+      <div
+        className={
+          compact ? 'grid grid-cols-1 gap-4 sm:grid-cols-2' : 'grid grid-cols-1 gap-4 min-[768px]:grid-cols-2'
+        }
+      >
         <Input
           label="Título del incidente"
           placeholder="Ej. Bloqueo en vía hacia Sitio Alpha"
@@ -180,19 +193,21 @@ export function IncidentForm({ onSubmit, isSubmitting = false }: IncidentFormPro
             ruta (visible en app móvil)
           </span>
         </label>
-        <div className="col-span-full">
-          <span className="mb-1.5 block text-[0.8125rem] font-semibold">Ubicación en mapa *</span>
-          <LocationPickerMap
-            latitude={latitude ?? null}
-            longitude={longitude ?? null}
-            onChange={handleMapPick}
-          />
-          {errors.latitude?.message || errors.longitude?.message ? (
-            <span className="text-sm text-red-600">
-              {errors.latitude?.message ?? errors.longitude?.message}
-            </span>
-          ) : null}
-        </div>
+        {showLocationPicker ? (
+          <div className="col-span-full">
+            <span className="mb-1.5 block text-[0.8125rem] font-semibold">Ubicación en mapa *</span>
+            <LocationPickerMap
+              latitude={latitude ?? null}
+              longitude={longitude ?? null}
+              onChange={handleMapPick}
+            />
+            {errors.latitude?.message || errors.longitude?.message ? (
+              <span className="text-sm text-red-600">
+                {errors.latitude?.message ?? errors.longitude?.message}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
       </div>
 
       {submitError ? <p className="text-sm text-red-600">{submitError}</p> : null}

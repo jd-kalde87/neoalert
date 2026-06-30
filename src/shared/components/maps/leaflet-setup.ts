@@ -28,6 +28,16 @@ export function createSeverityIcon(color: string) {
   })
 }
 
+/** Marcador para incidente nuevo / selección en mapa (evita icono default roto en Vite) */
+export function createIncidentPickerIcon() {
+  return L.divIcon({
+    className: 'neo-map-marker',
+    html: `<span style="background:#dc2626;width:18px;height:18px;border:2px solid #fff;box-shadow:0 1px 4px rgba(15,23,42,.35)"></span>`,
+    iconSize: [18, 18],
+    iconAnchor: [9, 9],
+  })
+}
+
 export const SEVERITY_COLORS = {
   low: '#2563eb',
   medium: '#d97706',

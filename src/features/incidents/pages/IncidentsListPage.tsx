@@ -19,7 +19,7 @@ export function IncidentsListPage() {
         title="Incidentes de seguridad"
         description="Registro y seguimiento de riesgos en rutas desde la planta central hacia los sitios de trabajo. Visible para colaboradores en app móvil."
         actions={
-          <Link to={ROUTES.incidentNew}>
+          <Link to={ROUTES.maps}>
             <Button>Registrar incidente</Button>
           </Link>
         }
