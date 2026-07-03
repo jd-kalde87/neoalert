@@ -10,15 +10,15 @@ export function MapLegend({ compact = false }: { compact?: boolean }) {
     >
       <span className="inline-flex items-center gap-2">
         <i className="inline-block size-2.5 shrink-0 rounded-full bg-brand-900" />
-        Planta
+        Proyecto
       </span>
       <span className="inline-flex items-center gap-2">
         <i className="inline-block size-2.5 shrink-0 rounded-full bg-emerald-600" />
-        Sitio de trabajo
+        Departamento
       </span>
       <span className="inline-flex items-center gap-2">
-        <i className="inline-block size-2.5 shrink-0 rounded-full bg-red-600" />
-        Incidente de seguridad
+        <i className="inline-block size-2.5 shrink-0 rounded-full border-2 border-amber-500 bg-red-600" />
+        Zona de riesgo
       </span>
     </div>
   )

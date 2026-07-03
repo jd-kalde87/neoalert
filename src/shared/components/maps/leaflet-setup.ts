@@ -38,6 +38,16 @@ export function createIncidentPickerIcon() {
   })
 }
 
+/** Marcador de zona de riesgo (borde ámbar) */
+export function createRiskZoneIcon(color: string) {
+  return L.divIcon({
+    className: 'neo-map-marker neo-map-marker--risk',
+    html: `<span style="background:${color};width:20px;height:20px;border:3px solid #f59e0b;box-shadow:0 2px 6px rgba(15,23,42,.35)"></span>`,
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+  })
+}
+
 export const SEVERITY_COLORS = {
   low: '#2563eb',
   medium: '#d97706',

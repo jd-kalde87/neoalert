@@ -6,7 +6,7 @@ import { Card } from '@shared/components/ui/Card'
 import { Input } from '@shared/components/ui/Input'
 import { Select } from '@shared/components/ui/Select'
 import { ROUTES } from '@shared/constants/routes'
-import { usePlantOptions, useWorkSiteSelectOptions } from '@shared/hooks/useOperations'
+import { useDepartmentSelectOptions, useProjectOptions } from '@shared/hooks/useOperations'
 import { useOperationsStore } from '@shared/stores/operationsStore'
 import type { RouteCoordinate } from '@shared/types/operations.types'
 import { ROUTE_COLOR_PRESETS } from '@shared/types/operations.types'
@@ -19,17 +19,19 @@ export function RouteFormPage() {
   const isEdit = Boolean(id)
 
   const route = useOperationsStore((state) => state.routes.find((item) => item.id === id))
-  const plants = useOperationsStore((state) => state.plants)
-  const workSites = useOperationsStore((state) => state.workSites)
+  const projects = useOperationsStore((state) => state.projects)
+  const departments = useOperationsStore((state) => state.departments)
   const createRoute = useOperationsStore((state) => state.createRoute)
   const updateRoute = useOperationsStore((state) => state.updateRoute)
 
-  const plantOptions = usePlantOptions()
-  const siteOptions = useWorkSiteSelectOptions()
+  const projectOptions = useProjectOptions()
+  const departmentOptions = useDepartmentSelectOptions()
 
   const [name, setName] = useState(route?.name ?? '')
-  const [plantId, setPlantId] = useState(route?.plantId ?? plantOptions[0]?.value ?? '')
-  const [workSiteId, setWorkSiteId] = useState(route?.workSiteId ?? siteOptions[0]?.value ?? '')
+  const [projectId, setProjectId] = useState(route?.projectId ?? projectOptions[0]?.value ?? '')
+  const [departmentId, setDepartmentId] = useState(
+    route?.departmentId ?? departmentOptions[0]?.value ?? '',
+  )
   const [color, setColor] = useState(route?.color ?? ROUTE_COLOR_PRESETS[0])
   const [estimatedMinutes, setEstimatedMinutes] = useState(String(route?.estimatedMinutes ?? ''))
   const [active, setActive] = useState(route?.active ?? true)
@@ -37,13 +39,13 @@ export function RouteFormPage() {
   const [roadSnapped, setRoadSnapped] = useState(route?.roadSnapped ?? false)
   const [error, setError] = useState<string | null>(null)
 
-  const selectedPlant = useMemo(
-    () => plants.find((item) => item.id === plantId),
-    [plants, plantId],
+  const selectedProject = useMemo(
+    () => projects.find((item) => item.id === projectId),
+    [projects, projectId],
   )
-  const selectedSite = useMemo(
-    () => workSites.find((item) => item.id === workSiteId),
-    [workSites, workSiteId],
+  const selectedDepartment = useMemo(
+    () => departments.find((item) => item.id === departmentId),
+    [departments, departmentId],
   )
 
   const handleRouteCalculated = useCallback(
@@ -63,8 +65,8 @@ export function RouteFormPage() {
       setError('El nombre es obligatorio.')
       return
     }
-    if (!plantId || !workSiteId) {
-      setError('Seleccione planta y punto de trabajo.')
+    if (!projectId || !departmentId) {
+      setError('Seleccione proyecto y departamento.')
       return
     }
     if (coordinates.length < 2) {
@@ -74,8 +76,8 @@ export function RouteFormPage() {
 
     const payload = {
       name,
-      plantId,
-      workSiteId,
+      projectId,
+      departmentId,
       color,
       coordinates,
       estimatedMinutes: estimatedMinutes ? Number(estimatedMinutes) : undefined,
@@ -110,7 +112,7 @@ export function RouteFormPage() {
     <section>
       <PageHeader
         title={isEdit ? 'Editar ruta operativa' : 'Nueva ruta operativa'}
-        description="Defina origen y destino, luego trace el corredor sobre la red vial (OpenStreetMap + OSRM)."
+        description="Defina proyecto y departamento, luego trace el corredor sobre la red vial."
         actions={
           <Link to={`${ROUTES.operations}?tab=routes`}>
             <Button variant="secondary" size="sm">
@@ -125,13 +127,19 @@ export function RouteFormPage() {
           <form className="neo-form-stack" onSubmit={handleSubmit}>
             {error ? <p className="neo-alert-error m-0">{error}</p> : null}
             <Input label="Nombre" name="name" value={name} onChange={(e) => setName(e.target.value)} />
-            <Select label="Planta origen" name="plantId" value={plantId} options={plantOptions} onChange={setPlantId} />
             <Select
-              label="Punto destino"
-              name="workSiteId"
-              value={workSiteId}
-              options={siteOptions}
-              onChange={setWorkSiteId}
+              label="Proyecto origen"
+              name="projectId"
+              value={projectId}
+              options={projectOptions}
+              onChange={setProjectId}
+            />
+            <Select
+              label="Departamento destino"
+              name="departmentId"
+              value={departmentId}
+              options={departmentOptions}
+              onChange={setDepartmentId}
             />
             <div>
               <span className="mb-2 block text-xs font-medium text-slate-600">Color en mapa</span>
@@ -170,11 +178,11 @@ export function RouteFormPage() {
         <Card padding="lg">
           <h2 className="neo-section-title mb-3">Trazado gráfico por vías</h2>
           <RouteMapEditor
-            key={`${plantId}-${workSiteId}-${id ?? 'new'}`}
-            plantLat={selectedPlant?.latitude ?? null}
-            plantLng={selectedPlant?.longitude ?? null}
-            siteLat={selectedSite?.latitude ?? null}
-            siteLng={selectedSite?.longitude ?? null}
+            key={`${projectId}-${departmentId}-${id ?? 'new'}`}
+            plantLat={selectedProject?.latitude ?? null}
+            plantLng={selectedProject?.longitude ?? null}
+            siteLat={selectedDepartment?.latitude ?? null}
+            siteLng={selectedDepartment?.longitude ?? null}
             color={color}
             initialCoordinates={route?.coordinates ?? []}
             initialRoadSnapped={route?.roadSnapped ?? false}

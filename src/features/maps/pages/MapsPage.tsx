@@ -1,13 +1,13 @@
 import { useOutletContext } from 'react-router-dom'
-import type { MapIncident, MapIncidentsSummary } from '@shared/types/map.types'
+import type { MapRisk, MapRisksSummary } from '@shared/types/map.types'
 import { HeatmapStatsPanel } from '../components/HeatmapStatsPanel'
-import { IncidentListPanel } from '../components/IncidentListPanel'
+import { RiskListPanel } from '../components/RiskListPanel'
 
 interface MapsOutletContext {
-  incidents: MapIncident[]
-  summary?: MapIncidentsSummary
-  selectedIncidentId: string | null
-  selectIncident: (id: string | null) => void
+  risks: MapRisk[]
+  summary?: MapRisksSummary
+  selectedRiskId: string | null
+  selectRisk: (id: string | null) => void
 }
 
 function PanelHeader({ title, description }: { title: string; description: string }) {
@@ -20,19 +20,18 @@ function PanelHeader({ title, description }: { title: string; description: strin
 }
 
 export function MapsPage() {
-  const { incidents, selectedIncidentId, selectIncident } =
-    useOutletContext<MapsOutletContext>()
+  const { risks, selectedRiskId, selectRisk } = useOutletContext<MapsOutletContext>()
 
   return (
     <div className="flex flex-col gap-4">
       <PanelHeader
-        title="Incidentes en ruta"
-        description="Seleccione un incidente en la lista o en el mapa. Use clic en el mapa para registrar uno nuevo."
+        title="Riesgos actuales"
+        description="Seleccione una zona en la lista o en el mapa. Use clic en el mapa para registrar un nuevo riesgo."
       />
-      <IncidentListPanel
-        incidents={incidents}
-        selectedIncidentId={selectedIncidentId}
-        onSelect={(id) => selectIncident(id)}
+      <RiskListPanel
+        risks={risks}
+        selectedRiskId={selectedRiskId}
+        onSelect={(id) => selectRisk(id)}
       />
     </div>
   )
@@ -44,8 +43,8 @@ export function HeatmapPage() {
   return (
     <div className="flex flex-col gap-4">
       <PanelHeader
-        title="Densidad de riesgos"
-        description="Concentración de incidentes por nivel de riesgo y corredores operativos planta → sitios."
+        title="Mapa de calor de riesgos"
+        description="Densidad de zonas de riesgo por nivel y municipio según los filtros globales."
       />
 
       {summary ? (

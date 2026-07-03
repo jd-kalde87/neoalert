@@ -22,11 +22,11 @@ export interface PaginatedResponse<T> {
 
 export interface GlobalFilters {
   tenantId?: string
-  plantId?: string
-  zoneId?: string
-  siteId?: string
+  projectId?: string
+  municipalityId?: string
+  departmentId?: string
   countryCode?: string
-  crewId?: string
+  sectorId?: string
   dateFrom?: string
   dateTo?: string
   eventType?: string

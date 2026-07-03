@@ -53,6 +53,10 @@ export interface CreateIncidentDto {
   blocksTransit: boolean
   routeName?: string
   targetWorkSite?: string
+  projectId?: string
+  departmentId?: string
+  municipalityId?: string
+  sectorId?: string
   reportedBy?: string
 }
 

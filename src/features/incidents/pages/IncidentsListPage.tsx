@@ -17,11 +17,16 @@ export function IncidentsListPage() {
     <section>
       <PageHeader
         title="Incidentes de seguridad"
-        description="Registro y seguimiento de riesgos en rutas desde la planta central hacia los sitios de trabajo. Visible para colaboradores en app móvil."
+        description="Registro de riesgos materializados. Las zonas de riesgo preventivas se gestionan en el mapa de riesgos."
         actions={
-          <Link to={ROUTES.maps}>
-            <Button>Registrar incidente</Button>
-          </Link>
+          <>
+            <Link to={ROUTES.maps}>
+              <Button variant="secondary">Mapa de riesgos</Button>
+            </Link>
+            <Link to={ROUTES.incidentNew}>
+              <Button>Registrar incidente</Button>
+            </Link>
+          </>
         }
       />
 

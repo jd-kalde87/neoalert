@@ -14,7 +14,7 @@ export function MapViewNav() {
           )
         }
       >
-        Operativo
+        Mapa de riesgos
       </NavLink>
       <NavLink
         to={ROUTES.heatmap}
@@ -25,7 +25,7 @@ export function MapViewNav() {
           )
         }
       >
-        Heatmap
+        Mapa de calor
       </NavLink>
     </nav>
   )

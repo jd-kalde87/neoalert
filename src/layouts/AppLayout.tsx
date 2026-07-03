@@ -27,9 +27,9 @@ import { cn } from '@shared/utils/cn'
 
 const NAV_ITEMS: { to: string; label: string; icon: LucideIcon }[] = [
   { to: ROUTES.dashboard, label: 'Dashboard', icon: LayoutDashboard },
-  { to: ROUTES.maps, label: 'Mapa de rutas', icon: Map },
-  { to: ROUTES.operations, label: 'Plantas y rutas', icon: Building2 },
-  { to: ROUTES.incidents, label: 'Seguridad', icon: Shield },
+  { to: ROUTES.maps, label: 'Mapa de riesgos', icon: Map },
+  { to: ROUTES.operations, label: 'Proyectos y rutas', icon: Building2 },
+  { to: ROUTES.incidents, label: 'Incidentes', icon: Shield },
   { to: ROUTES.attendance, label: 'Asistencia', icon: UserCheck },
   { to: ROUTES.notifications, label: 'Notificaciones', icon: Bell },
   { to: ROUTES.imports, label: 'Importaciones', icon: Upload },

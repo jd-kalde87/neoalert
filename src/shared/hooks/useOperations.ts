@@ -1,41 +1,42 @@
 import { useMemo } from 'react'
-import { ZONE_OPTIONS } from '@shared/constants/filter-options'
+import { MUNICIPALITY_OPTIONS } from '@shared/constants/filter-options'
+import { MUNICIPALITY_GEO } from '@shared/constants/geo.constants'
 import { useOperationsStore } from '@shared/stores/operationsStore'
 
-export function usePlants() {
-  return useOperationsStore((state) => state.plants)
+export function useProjects() {
+  return useOperationsStore((state) => state.projects)
 }
 
-export function useWorkSites() {
-  return useOperationsStore((state) => state.workSites)
+export function useDepartments() {
+  return useOperationsStore((state) => state.departments)
 }
 
 export function useOperationalRoutes() {
   return useOperationsStore((state) => state.routes)
 }
 
-export function usePrimaryPlant() {
-  const plants = useOperationsStore((state) => state.plants)
+export function usePrimaryProject() {
+  const projects = useOperationsStore((state) => state.projects)
   return useMemo(
     () =>
-      plants.find((item) => item.isPrimary && item.active) ??
-      plants.find((item) => item.active),
-    [plants],
+      projects.find((item) => item.isPrimary && item.active) ??
+      projects.find((item) => item.active),
+    [projects],
   )
 }
 
 export function useActiveOperationalData() {
-  const plants = useOperationsStore((state) => state.plants)
-  const workSites = useOperationsStore((state) => state.workSites)
+  const projects = useOperationsStore((state) => state.projects)
+  const departments = useOperationsStore((state) => state.departments)
   const routes = useOperationsStore((state) => state.routes)
 
   return useMemo(
     () => ({
-      plants: plants.filter((item) => item.active),
-      workSites: workSites.filter((item) => item.active),
+      projects: projects.filter((item) => item.active),
+      departments: departments.filter((item) => item.active),
       routes: routes.filter((item) => item.active),
     }),
-    [plants, workSites, routes],
+    [projects, departments, routes],
   )
 }
 
@@ -50,47 +51,93 @@ export function useRouteNameOptions() {
   )
 }
 
-export function useWorkSiteLabelOptions() {
-  const workSites = useOperationsStore((state) => state.workSites)
+export function useDepartmentLabelOptions() {
+  const departments = useOperationsStore((state) => state.departments)
   return useMemo(
     () =>
-      workSites
-        .filter((site) => site.active)
-        .map((site) => ({ value: site.name, label: site.name, id: site.id })),
-    [workSites],
+      departments
+        .filter((department) => department.active)
+        .map((department) => ({
+          value: department.name,
+          label: department.name,
+          id: department.id,
+        })),
+    [departments],
   )
 }
 
-export function useWorkSiteByName(name: string | undefined) {
-  const workSites = useOperationsStore((state) => state.workSites)
+export function useDepartmentByName(name: string | undefined) {
+  const departments = useOperationsStore((state) => state.departments)
   return useMemo(
-    () => workSites.find((site) => site.name === name),
-    [workSites, name],
+    () => departments.find((department) => department.name === name),
+    [departments, name],
   )
 }
 
-export function zoneLabel(zoneId: string) {
-  return ZONE_OPTIONS.find((zone) => zone.value === zoneId)?.label ?? zoneId
-}
-
-export function usePlantOptions() {
-  const plants = useOperationsStore((state) => state.plants)
-  return useMemo(
-    () =>
-      plants
-        .filter((plant) => plant.active)
-        .map((plant) => ({ value: plant.id, label: plant.name })),
-    [plants],
+export function municipalityLabel(municipalityId: string) {
+  return (
+    MUNICIPALITY_OPTIONS.find((item) => item.value === municipalityId)?.label ?? municipalityId
   )
 }
 
-export function useWorkSiteSelectOptions() {
-  const workSites = useOperationsStore((state) => state.workSites)
+export function useProjectOptions(countryCode?: string) {
+  const projects = useOperationsStore((state) => state.projects)
   return useMemo(
     () =>
-      workSites
-        .filter((site) => site.active)
-        .map((site) => ({ value: site.id, label: site.name })),
-    [workSites],
+      projects
+        .filter((project) => project.active)
+        .filter((project) => !countryCode || project.countryCode === countryCode)
+        .map((project) => ({ value: project.id, label: project.name })),
+    [projects, countryCode],
   )
 }
+
+export function useDepartmentSelectOptions(filters?: {
+  countryCode?: string
+  projectId?: string
+  municipalityId?: string
+}) {
+  const departments = useOperationsStore((state) => state.departments)
+  return useMemo(
+    () =>
+      departments
+        .filter((department) => department.active)
+        .filter(
+          (department) => !filters?.countryCode || department.countryCode === filters.countryCode,
+        )
+        .filter((department) => !filters?.projectId || department.projectId === filters.projectId)
+        .filter(
+          (department) =>
+            !filters?.municipalityId || department.municipalityId === filters.municipalityId,
+        )
+        .map((department) => ({ value: department.id, label: department.name })),
+    [departments, filters?.countryCode, filters?.projectId, filters?.municipalityId],
+  )
+}
+
+export function useMunicipalityOptions(countryCode?: string) {
+  return useMemo(
+    () =>
+      MUNICIPALITY_GEO.filter((item) => !countryCode || item.countryCode === countryCode).map(
+        (item) => ({ value: item.value, label: item.label }),
+      ),
+    [countryCode],
+  )
+}
+
+/** @deprecated Use useProjects */
+export const usePlants = useProjects
+/** @deprecated Use useDepartments */
+export const useWorkSites = useDepartments
+/** @deprecated Use usePrimaryProject */
+export const usePrimaryPlant = usePrimaryProject
+/** @deprecated Use useProjectOptions */
+export const usePlantOptions = useProjectOptions
+/** @deprecated Use useDepartmentSelectOptions */
+export const useWorkSiteSelectOptions = useDepartmentSelectOptions
+/** @deprecated Use useDepartmentLabelOptions */
+export const useWorkSiteLabelOptions = useDepartmentLabelOptions
+/** @deprecated Use useDepartmentByName */
+export const useWorkSiteByName = useDepartmentByName
+/** @deprecated Use municipalityLabel */
+export const zoneLabel = municipalityLabel

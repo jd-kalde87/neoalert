@@ -1,12 +1,12 @@
 import { useEffect } from 'react'
 import { MapContainer, Marker, Polyline, Popup, TileLayer, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
-import { useActiveOperationalData, usePrimaryPlant } from '@shared/hooks/useOperations'
-import { configureLeafletDefaults, createIncidentPickerIcon } from './leaflet-setup'
+import { useActiveOperationalData } from '@shared/hooks/useOperations'
+import { configureLeafletDefaults, createRiskZoneIcon } from './leaflet-setup'
 import 'leaflet/dist/leaflet.css'
 import './leaflet.css'
 
-function plantIcon() {
+function projectIcon() {
   return L.divIcon({
     className: 'neo-op-marker neo-op-marker--plant',
     html: '<span>P</span>',
@@ -15,17 +15,17 @@ function plantIcon() {
   })
 }
 
-function siteIcon() {
+function departmentIcon() {
   return L.divIcon({
     className: 'neo-op-marker neo-op-marker--site',
-    html: '<span>S</span>',
+    html: '<span>D</span>',
     iconSize: [24, 24],
     iconAnchor: [12, 12],
   })
 }
 
 export function OperationLayers() {
-  const { routes, workSites, plants } = useActiveOperationalData()
+  const { routes, departments, projects } = useActiveOperationalData()
 
   useEffect(() => {
     configureLeafletDefaults()
@@ -41,20 +41,28 @@ export function OperationLayers() {
         />
       ))}
 
-      {plants.map((plant) => (
-        <Marker key={plant.id} position={[plant.latitude, plant.longitude]} icon={plantIcon()}>
+      {projects.map((project) => (
+        <Marker
+          key={project.id}
+          position={[project.latitude, project.longitude]}
+          icon={projectIcon()}
+        >
           <Popup>
-            <strong>{plant.name}</strong>
-            {plant.description ? <p>{plant.description}</p> : null}
+            <strong>{project.name}</strong>
+            {project.description ? <p>{project.description}</p> : null}
           </Popup>
         </Marker>
       ))}
 
-      {workSites.map((site) => (
-        <Marker key={site.id} position={[site.latitude, site.longitude]} icon={siteIcon()}>
+      {departments.map((department) => (
+        <Marker
+          key={department.id}
+          position={[department.latitude, department.longitude]}
+          icon={departmentIcon()}
+        >
           <Popup>
-            <strong>{site.name}</strong>
-            <p>Sitio de trabajo — destino operativo</p>
+            <strong>{department.name}</strong>
+            <p>Departamento operativo</p>
           </Popup>
         </Marker>
       ))}
@@ -78,14 +86,12 @@ function PickHandler({ onChange }: { onChange: LocationPickerMapProps['onChange'
 }
 
 export function LocationPickerMap({ latitude, longitude, onChange }: LocationPickerMapProps) {
-  const primaryPlant = usePrimaryPlant()
-
   useEffect(() => {
     configureLeafletDefaults()
   }, [])
 
-  const defaultLat = primaryPlant?.latitude ?? 4.695
-  const defaultLng = primaryPlant?.longitude ?? -74.13
+  const defaultLat = 10
+  const defaultLng = -25
 
   const center: [number, number] =
     latitude != null && longitude != null ? [latitude, longitude] : [defaultLat, defaultLng]
@@ -93,11 +99,11 @@ export function LocationPickerMap({ latitude, longitude, onChange }: LocationPic
   return (
     <div className="flex flex-col gap-2">
       <p className="text-[0.8125rem] text-slate-500">
-        Haz clic en el mapa para ubicar el incidente de seguridad en la vía o punto de riesgo.
+        Haz clic en el mapa para ubicar el punto en la vía o zona de riesgo.
       </p>
       <MapContainer
         center={center}
-        zoom={11}
+        zoom={latitude != null ? 12 : 2}
         className="h-80 w-full rounded-md border border-slate-200"
         scrollWheelZoom
       >
@@ -105,10 +111,9 @@ export function LocationPickerMap({ latitude, longitude, onChange }: LocationPic
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <OperationLayers />
         <PickHandler onChange={onChange} />
         {latitude != null && longitude != null ? (
-          <Marker position={[latitude, longitude]} icon={createIncidentPickerIcon()} />
+          <Marker position={[latitude, longitude]} icon={createRiskZoneIcon('#dc2626')} />
         ) : null}
       </MapContainer>
       {latitude != null && longitude != null ? (

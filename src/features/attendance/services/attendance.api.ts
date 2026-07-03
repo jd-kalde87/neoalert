@@ -1,3 +1,4 @@
+import { matchesTerritoryFilters } from '@shared/utils/territoryFilters'
 import type { GlobalFilters } from '@shared/types/common.types'
 import type {
   AttendanceListFilters,
@@ -112,19 +113,7 @@ const seedRecords: AttendanceRecord[] = [
 let attendanceDb = [...seedRecords]
 
 function applyGlobalFilters(records: AttendanceRecord[], filters: GlobalFilters) {
-  return records.filter((record) => {
-    if (filters.siteId && record.siteId && record.siteId !== filters.siteId) return false
-    if (filters.zoneId) {
-      const siteZoneMap: Record<string, string> = {
-        'site-alpha': 'zone-norte',
-        'site-beta': 'zone-centro',
-        'site-gamma': 'zone-sur',
-        'site-delta': 'zone-oriente',
-      }
-      if (record.siteId && siteZoneMap[record.siteId] !== filters.zoneId) return false
-    }
-    return true
-  })
+  return records.filter((record) => matchesTerritoryFilters(record, filters))
 }
 
 function applyLocalFilters(records: AttendanceRecord[], filters: AttendanceListFilters) {

@@ -13,12 +13,15 @@ import { useFilterStore } from '@shared/stores/filterStore'
 import { useUiStore } from '@shared/stores/uiStore'
 import {
   COUNTRY_OPTIONS,
-  CREW_OPTIONS,
   EVENT_TYPE_OPTIONS,
+  SECTOR_OPTIONS,
   TENANT_OPTIONS,
-  ZONE_OPTIONS,
 } from '@shared/constants/filter-options'
-import { usePlantOptions, useWorkSiteSelectOptions } from '@shared/hooks/useOperations'
+import {
+  useDepartmentSelectOptions,
+  useMunicipalityOptions,
+  useProjectOptions,
+} from '@shared/hooks/useOperations'
 import { Button } from '@shared/components/ui/Button'
 import { cn } from '@shared/utils/cn'
 
@@ -121,18 +124,23 @@ export function GlobalFilterBar() {
     setFiltersOpen(!isMapRoute)
   }, [isMapRoute])
 
-  const plantOptions = usePlantOptions()
-  const siteOptions = useWorkSiteSelectOptions()
+  const projectOptions = useProjectOptions(filters.countryCode)
+  const departmentOptions = useDepartmentSelectOptions({
+    countryCode: filters.countryCode,
+    projectId: filters.projectId,
+    municipalityId: filters.municipalityId,
+  })
+  const municipalityOptions = useMunicipalityOptions(filters.countryCode)
 
   const activeCount = useMemo(
     () =>
       [
         filters.tenantId,
         filters.countryCode,
-        filters.plantId,
-        filters.zoneId,
-        filters.siteId,
-        filters.crewId,
+        filters.projectId,
+        filters.municipalityId,
+        filters.departmentId,
+        filters.sectorId,
         filters.eventType,
       ].filter(Boolean).length,
     [filters],
@@ -200,40 +208,54 @@ export function GlobalFilterBar() {
               label="País"
               value={filters.countryCode}
               options={COUNTRY_OPTIONS}
-              onChange={(countryCode) => setFilters({ countryCode: countryCode || undefined })}
+              onChange={(countryCode) =>
+                setFilters({
+                  countryCode: countryCode || undefined,
+                  projectId: undefined,
+                  departmentId: undefined,
+                  municipalityId: undefined,
+                })
+              }
             />
           </FilterGroup>
 
-          <FilterGroup title="Operación" compact={sidebarExpanded}>
+          <FilterGroup title="Territorio" compact={sidebarExpanded}>
             <FilterField
-              label="Planta"
+              label="Proyecto"
               icon={Building2}
-              value={filters.plantId}
-              options={plantOptions}
-              onChange={(plantId) => setFilters({ plantId: plantId || undefined })}
+              value={filters.projectId}
+              options={projectOptions}
+              onChange={(projectId) =>
+                setFilters({
+                  projectId: projectId || undefined,
+                  departmentId: undefined,
+                })
+              }
             />
             <FilterField
-              label="Sitio de trabajo"
+              label="Departamento"
               icon={MapPin}
-              value={filters.siteId}
-              options={siteOptions}
-              onChange={(siteId) => setFilters({ siteId: siteId || undefined })}
+              value={filters.departmentId}
+              options={departmentOptions}
+              onChange={(departmentId) => setFilters({ departmentId: departmentId || undefined })}
             />
             <FilterField
-              label="Corredor"
-              value={filters.zoneId}
-              options={ZONE_OPTIONS}
-              onChange={(zoneId) => setFilters({ zoneId: zoneId || undefined })}
+              label="Municipio"
+              value={filters.municipalityId}
+              options={municipalityOptions}
+              onChange={(municipalityId) =>
+                setFilters({ municipalityId: municipalityId || undefined })
+              }
             />
             <FilterField
-              label="Cuadrilla"
-              value={filters.crewId}
-              options={CREW_OPTIONS}
-              onChange={(crewId) => setFilters({ crewId: crewId || undefined })}
+              label="Sector"
+              value={filters.sectorId}
+              options={SECTOR_OPTIONS}
+              onChange={(sectorId) => setFilters({ sectorId: sectorId || undefined })}
             />
           </FilterGroup>
 
-          <FilterGroup title="Eventos" compact={sidebarExpanded}>
+          <FilterGroup title="Riesgos" compact={sidebarExpanded}>
             <FilterField
               label="Tipo de evento"
               icon={Filter}

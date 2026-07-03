@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { MapContainer, Marker, Polyline, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import type { RouteCoordinate } from '@shared/types/operations.types'
-import { usePlants, useWorkSites, useOperationalRoutes } from '@shared/hooks/useOperations'
+import { useProjects, useDepartments, useOperationalRoutes } from '@shared/hooks/useOperations'
 import { configureLeafletDefaults } from '@shared/components/maps/leaflet-setup'
 import 'leaflet/dist/leaflet.css'
 import '@shared/components/maps/leaflet.css'
@@ -63,20 +63,20 @@ function ClickHandler({ onClick, enabled = true }: ClickHandlerProps) {
 }
 
 export interface OperationMapContextProps {
-  excludePlantId?: string
-  excludeSiteId?: string
+  excludeProjectId?: string
+  excludeDepartmentId?: string
   excludeRouteId?: string
   showRoutes?: boolean
 }
 
 function OperationMapContext({
-  excludePlantId,
-  excludeSiteId,
+  excludeProjectId,
+  excludeDepartmentId,
   excludeRouteId,
   showRoutes = true,
 }: OperationMapContextProps) {
-  const plants = usePlants()
-  const workSites = useWorkSites()
+  const projects = useProjects()
+  const departments = useDepartments()
   const routes = useOperationalRoutes()
 
   return (
@@ -98,24 +98,28 @@ function OperationMapContext({
             ))
         : null}
 
-      {plants
-        .filter((plant) => plant.id !== excludePlantId && plant.active)
-        .map((plant) => (
-          <Marker key={plant.id} position={[plant.latitude, plant.longitude]} icon={plantIcon()}>
+      {projects
+        .filter((project) => project.id !== excludeProjectId && project.active)
+        .map((project) => (
+          <Marker key={project.id} position={[project.latitude, project.longitude]} icon={plantIcon()}>
             <Popup>
-              <strong>{plant.name}</strong>
-              <p className="text-xs text-slate-500">Planta existente</p>
+              <strong>{project.name}</strong>
+              <p className="text-xs text-slate-500">Proyecto existente</p>
             </Popup>
           </Marker>
         ))}
 
-      {workSites
-        .filter((site) => site.id !== excludeSiteId && site.active)
-        .map((site) => (
-          <Marker key={site.id} position={[site.latitude, site.longitude]} icon={siteIcon()}>
+      {departments
+        .filter((department) => department.id !== excludeDepartmentId && department.active)
+        .map((department) => (
+          <Marker
+            key={department.id}
+            position={[department.latitude, department.longitude]}
+            icon={siteIcon()}
+          >
             <Popup>
-              <strong>{site.name}</strong>
-              <p className="text-xs text-slate-500">Sitio existente</p>
+              <strong>{department.name}</strong>
+              <p className="text-xs text-slate-500">Departamento existente</p>
             </Popup>
           </Marker>
         ))}
@@ -141,9 +145,9 @@ export function GraphicPointPicker({
   markerLabel,
   markerColor,
   hint,
-  defaultCenter = [4.695, -74.13],
-  excludePlantId,
-  excludeSiteId,
+  defaultCenter = [10, -25],
+  excludeProjectId,
+  excludeDepartmentId,
   heightClass = 'h-[420px]',
 }: GraphicPointPickerProps) {
   useEffect(() => {
@@ -162,7 +166,10 @@ export function GraphicPointPicker({
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          <OperationMapContext excludePlantId={excludePlantId} excludeSiteId={excludeSiteId} />
+          <OperationMapContext
+            excludeProjectId={excludeProjectId}
+            excludeDepartmentId={excludeDepartmentId}
+          />
           <ClickHandler onClick={onChange} />
           {latitude != null && longitude != null ? (
             <>
@@ -218,7 +225,7 @@ export function RouteEditorMap({
     configureLeafletDefaults()
   }, [])
 
-  const defaultCenter: RouteCoordinate = plantPosition ?? sitePosition ?? [4.695, -74.13]
+  const defaultCenter: RouteCoordinate = plantPosition ?? sitePosition ?? [10, -25]
 
   return (
     <div className="flex flex-col gap-2">

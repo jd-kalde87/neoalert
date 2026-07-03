@@ -1,12 +1,13 @@
+import { matchesTerritoryFilters } from '@shared/utils/territoryFilters'
 import type { GlobalFilters } from '@shared/types/common.types'
 import type { DashboardSummary } from '../types/dashboard.types'
 
 const BASE_KPIS: DashboardSummary['kpis'] = [
   {
-    id: 'active-incidents',
-    label: 'Incidentes de seguridad activos',
+    id: 'active-risks',
+    label: 'Zonas de riesgo activas',
     value: 5,
-    hint: 'En rutas operativas',
+    hint: 'Territorio monitoreado',
     trend: { direction: 'up', label: '+2 hoy' },
     variant: 'warning',
   },
@@ -99,18 +100,16 @@ const BASE_ALERTS: DashboardSummary['alerts'] = [
 
 function applyFilterMultiplier(filters: GlobalFilters) {
   let multiplier = 1
-  if (filters.zoneId) multiplier *= 0.72
-  if (filters.siteId) multiplier *= 0.85
-  if (filters.crewId) multiplier *= 0.6
+  if (filters.municipalityId) multiplier *= 0.72
+  if (filters.departmentId) multiplier *= 0.85
+  if (filters.sectorId) multiplier *= 0.6
   if (filters.eventType) multiplier *= 0.9
   return multiplier
 }
 
 function filterAlerts(filters: GlobalFilters) {
   return BASE_ALERTS.filter((alert) => {
-    if (filters.zoneId && alert.zoneId && alert.zoneId !== filters.zoneId) return false
-    if (filters.siteId && alert.siteId && alert.siteId !== filters.siteId) return false
-    if (filters.crewId && alert.crewId && alert.crewId !== filters.crewId) return false
+    if (!matchesTerritoryFilters(alert, filters)) return false
     if (filters.eventType && alert.type !== filters.eventType) return false
     return true
   })
@@ -145,9 +144,9 @@ export async function fetchDashboardSummary(filters: GlobalFilters): Promise<Das
     kpis,
     alerts,
     mapSummary: {
-      activeIncidents: Number(kpis.find((k) => k.id === 'active-incidents')?.value ?? 0),
-      zonesMonitored: filters.zoneId ? 1 : 4,
-      crewsOnField: Number(kpis.find((k) => k.id === 'crews-on-field')?.value ?? 0),
+      activeRisks: Number(kpis.find((k) => k.id === 'active-risks')?.value ?? 0),
+      municipalitiesMonitored: filters.municipalityId ? 1 : 4,
+      sectorsOnField: Number(kpis.find((k) => k.id === 'field-personnel')?.value ?? 0),
     },
   }
 }

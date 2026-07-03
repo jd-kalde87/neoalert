@@ -1,3 +1,4 @@
+import { matchesTerritoryFilters } from '@shared/utils/territoryFilters'
 import type { GlobalFilters } from '@shared/types/common.types'
 import type {
   AuditListFilters,
@@ -202,12 +203,7 @@ function applyFilters(
 
   return entries.filter((entry) => {
     if (!inDateRange(entry.timestamp, globalFilters)) return false
-    if (globalFilters.zoneId && entry.zoneId && entry.zoneId !== globalFilters.zoneId) {
-      return false
-    }
-    if (globalFilters.siteId && entry.siteId && entry.siteId !== globalFilters.siteId) {
-      return false
-    }
+    if (!matchesTerritoryFilters(entry, globalFilters)) return false
     if (localFilters.entity && entry.entity !== localFilters.entity) return false
     if (localFilters.action && entry.action !== localFilters.action) return false
     if (localFilters.outcome && entry.outcome !== localFilters.outcome) return false

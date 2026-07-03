@@ -14,6 +14,10 @@ export const createIncidentSchema = z.object({
   blocksTransit: z.boolean(),
   routeName: z.string().optional(),
   targetWorkSite: z.string().optional(),
+  projectId: z.string().optional(),
+  departmentId: z.string().optional(),
+  municipalityId: z.string().optional(),
+  sectorId: z.string().optional(),
   reportedBy: z.string().optional(),
 })
 

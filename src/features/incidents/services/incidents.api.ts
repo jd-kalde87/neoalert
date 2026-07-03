@@ -1,4 +1,6 @@
+import { matchesTerritoryFilters } from '@shared/utils/territoryFilters'
 import type { GlobalFilters } from '@shared/types/common.types'
+import { municipalityLabel } from '@shared/hooks/useOperations'
 import type {
   CreateIncidentDto,
   Incident,
@@ -162,11 +164,7 @@ const seedIncidents: Incident[] = [
 let incidentsDb = [...seedIncidents]
 
 function applyGlobalFilters(incidents: Incident[], filters: GlobalFilters) {
-  return incidents.filter((incident) => {
-    if (filters.zoneId && incident.zoneId !== filters.zoneId) return false
-    if (filters.siteId && incident.siteId && incident.siteId !== filters.siteId) return false
-    return true
-  })
+  return incidents.filter((incident) => matchesTerritoryFilters(incident, filters))
 }
 
 function applyLocalFilters(incidents: Incident[], filters: IncidentListFilters) {
@@ -224,6 +222,10 @@ export async function createIncident(payload: CreateIncidentDto) {
     routeName: payload.routeName,
     targetWorkSite: payload.targetWorkSite,
     reportedBy: payload.reportedBy,
+    zoneId: payload.municipalityId,
+    zoneLabel: payload.municipalityId ? municipalityLabel(payload.municipalityId) : undefined,
+    siteId: payload.departmentId,
+    crewId: payload.sectorId,
     reportedAt: now(),
     updatedAt: now(),
     timeline: [

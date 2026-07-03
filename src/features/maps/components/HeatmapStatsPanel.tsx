@@ -1,9 +1,9 @@
-import type { MapIncidentsSummary } from '@shared/types/map.types'
+import type { MapRisksSummary } from '@shared/types/map.types'
 import { Card } from '@shared/components/ui/Card'
-import { AlertTriangle, Ban, Layers } from 'lucide-react'
+import { AlertTriangle, Layers, ShieldAlert } from 'lucide-react'
 
 interface HeatmapStatsPanelProps {
-  summary: MapIncidentsSummary
+  summary: MapRisksSummary
 }
 
 const SEVERITY_ITEMS = [
@@ -24,19 +24,17 @@ export function HeatmapStatsPanel({ summary }: HeatmapStatsPanelProps) {
 
   return (
     <div className="flex flex-col gap-3">
-      <Card padding="md" className="border-red-100 bg-gradient-to-br from-red-50/80 to-white">
+      <Card padding="md" className="border-amber-100 bg-gradient-to-br from-amber-50/80 to-white">
         <div className="flex items-start gap-3">
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600">
-            <Ban className="size-5" />
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
+            <ShieldAlert className="size-5" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-slate-900">Rutas bloqueadas</h3>
+            <h3 className="text-sm font-semibold text-slate-900">Zonas de riesgo activas</h3>
             <p className="mt-0.5 text-xs text-slate-500">
-              Incidentes que impiden el desplazamiento del personal
+              Condiciones identificadas por administradores y supervisores
             </p>
-            <p className="mt-2 text-3xl font-bold tabular-nums text-red-600">
-              {summary.blockingRoutes}
-            </p>
+            <p className="mt-2 text-3xl font-bold tabular-nums text-amber-700">{summary.total}</p>
           </div>
         </div>
       </Card>
@@ -68,24 +66,24 @@ export function HeatmapStatsPanel({ summary }: HeatmapStatsPanelProps) {
       <Card padding="md">
         <div className="mb-3 flex items-center gap-2">
           <Layers className="size-4 text-slate-500" />
-          <h3 className="text-sm font-semibold text-slate-900">Por corredor</h3>
+          <h3 className="text-sm font-semibold text-slate-900">Por municipio</h3>
         </div>
         <ul className="m-0 flex list-none flex-col gap-2 p-0">
-          {summary.byZone.map((zone) => (
+          {summary.byMunicipality.map((municipality) => (
             <li
-              key={zone.zoneId}
+              key={municipality.municipalityId}
               className="flex items-center justify-between gap-2 rounded-md bg-slate-50 px-2.5 py-1.5 text-sm"
             >
-              <span className="text-slate-600">{zone.zoneLabel}</span>
-              <strong className="tabular-nums">{zone.count}</strong>
+              <span className="text-slate-600">{municipality.municipalityLabel}</span>
+              <strong className="tabular-nums">{municipality.count}</strong>
             </li>
           ))}
         </ul>
       </Card>
 
       <p className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-xs leading-relaxed text-slate-500">
-        El mapa de calor refleja puntos de riesgo en vías hacia los sitios de trabajo. Los
-        colaboradores verán estos datos en la app móvil.
+        El mapa de calor muestra la concentración de riesgos territoriales. Los incidentes se
+        registran cuando el personal confirma que el riesgo se materializó.
       </p>
     </div>
   )

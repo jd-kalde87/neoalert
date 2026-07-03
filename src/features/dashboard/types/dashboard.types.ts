@@ -26,8 +26,8 @@ export interface DashboardSummary {
   kpis: DashboardKpi[]
   alerts: DashboardAlert[]
   mapSummary: {
-    activeIncidents: number
-    zonesMonitored: number
-    crewsOnField: number
+    activeRisks: number
+    municipalitiesMonitored: number
+    sectorsOnField: number
   }
 }

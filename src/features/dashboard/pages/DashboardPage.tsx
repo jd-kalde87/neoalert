@@ -5,7 +5,7 @@ import { PageHeader } from '@shared/components/layout/PageHeader'
 import { Button } from '@shared/components/ui/Button'
 import { ROUTES } from '@shared/constants/routes'
 import { useFilterStore } from '@shared/stores/filterStore'
-import { DashboardMapPreview } from '../components/DashboardMapPreview'
+import { DashboardRiskMap } from '../components/DashboardRiskMap'
 import { KpiGrid } from '../components/KpiGrid'
 import { useDashboardData } from '../hooks/useDashboardData'
 
@@ -18,15 +18,15 @@ export function DashboardPage() {
   return (
     <div className="flex flex-col gap-4">
       <PageHeader
-        title="Centro de seguridad operativa"
-        description="Rutas planta → sitios de trabajo. KPIs de riesgo, mapa de incidentes y alertas para el personal."
+        title="Centro de gestión de riesgos"
+        description="Mapa territorial de riesgos, KPIs y alertas. Los incidentes se registran cuando el riesgo se materializa."
         actions={
           <>
             <Button variant="secondary" size="sm" onClick={() => refetch()}>
               Actualizar
             </Button>
             <Link to={ROUTES.maps}>
-              <Button size="sm">Ver mapa completo</Button>
+              <Button size="sm">Mapa de riesgos</Button>
             </Link>
           </>
         }
@@ -53,10 +53,10 @@ export function DashboardPage() {
               className="grid min-h-[420px] grid-cols-1 gap-4 min-[1100px]:grid-cols-[1.35fr_0.9fr]"
               aria-label="Mapa y alertas"
             >
-              <DashboardMapPreview
-                activeIncidents={data.mapSummary.activeIncidents}
-                zonesMonitored={data.mapSummary.zonesMonitored}
-                crewsOnField={data.mapSummary.crewsOnField}
+              <DashboardRiskMap
+                activeRisks={data.mapSummary.activeRisks}
+                municipalitiesMonitored={data.mapSummary.municipalitiesMonitored}
+                sectorsOnField={data.mapSummary.sectorsOnField}
               />
               <AlertsPanel alerts={data.alerts} />
             </section>

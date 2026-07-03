@@ -6,6 +6,14 @@ import { Select } from '@shared/components/ui/Select'
 import { Textarea } from '@shared/components/ui/Textarea'
 import { Button } from '@shared/components/ui/Button'
 import { LocationPickerMap } from '@shared/components/maps/OperationLayers'
+import { SECTOR_OPTIONS } from '@shared/constants/filter-options'
+import { useFilterStore } from '@shared/stores/filterStore'
+import {
+  useDepartmentSelectOptions,
+  useMunicipalityOptions,
+  useProjectOptions,
+  useRouteNameOptions,
+} from '@shared/hooks/useOperations'
 import {
   createIncidentSchema,
   type CreateIncidentFormValues,
@@ -16,7 +24,6 @@ import {
   REPORT_SOURCE_OPTIONS,
   SECURITY_INCIDENT_TYPES,
 } from '../types/incident.types'
-import { useRouteNameOptions, useWorkSiteLabelOptions } from '@shared/hooks/useOperations'
 
 const severityOptions = Object.entries(INCIDENT_SEVERITY_LABELS).map(([value, label]) => ({
   value,
@@ -25,6 +32,7 @@ const severityOptions = Object.entries(INCIDENT_SEVERITY_LABELS).map(([value, la
 
 const typeOptions = SECURITY_INCIDENT_TYPES.map((type) => ({ value: type, label: type }))
 const sourceOptions = REPORT_SOURCE_OPTIONS.map((source) => ({ value: source, label: source }))
+const sectorOptions = SECTOR_OPTIONS.map((sector) => ({ value: sector.value, label: sector.label }))
 
 interface IncidentFormProps {
   onSubmit: (values: CreateIncidentFormValues) => Promise<void>
@@ -42,11 +50,15 @@ export function IncidentForm({
   compact = false,
 }: IncidentFormProps) {
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const filters = useFilterStore((state) => state.filters)
   const routeOptions = useRouteNameOptions()
-  const siteOptions = useWorkSiteLabelOptions().map((site) => ({
-    value: site.label,
-    label: site.label,
-  }))
+  const projectOptions = useProjectOptions(filters.countryCode)
+  const departmentOptions = useDepartmentSelectOptions({
+    countryCode: filters.countryCode,
+    projectId: filters.projectId,
+    municipalityId: filters.municipalityId,
+  })
+  const municipalityOptions = useMunicipalityOptions(filters.countryCode)
 
   const {
     register,
@@ -61,22 +73,29 @@ export function IncidentForm({
       description: '',
       type: '',
       severity: 'high',
-      source: 'Jefe de área',
+      source: 'Operador de campo',
       location: '',
       latitude: initialLocation?.latitude,
       longitude: initialLocation?.longitude,
       blocksTransit: false,
       routeName: '',
-      targetWorkSite: '',
+      projectId: filters.projectId ?? '',
+      departmentId: filters.departmentId ?? '',
+      municipalityId: filters.municipalityId ?? '',
+      sectorId: filters.sectorId ?? '',
       reportedBy: '',
     },
   })
 
   const typeValue = watch('type')
   const severityValue = watch('severity')
-  const sourceValue = watch('source')
+  const sourceValue = watch('source') ?? 'Operador de campo'
   const routeValue = watch('routeName') ?? ''
-  const siteValue = watch('targetWorkSite') ?? ''
+  const projectValue = watch('projectId') ?? ''
+  const departmentValue = watch('departmentId') ?? ''
+  const municipalityValue = watch('municipalityId') ?? ''
+  const sectorValue = watch('sectorId') ?? ''
+  const descriptionValue = watch('description') ?? ''
   const blocksTransit = watch('blocksTransit')
   const latitude = watch('latitude')
   const longitude = watch('longitude')
@@ -104,7 +123,7 @@ export function IncidentForm({
       >
         <Input
           label="Título del incidente"
-          placeholder="Ej. Bloqueo en vía hacia Sitio Alpha"
+          placeholder="Ej. Bloqueo confirmado en kilómetro 10"
           {...register('title')}
           error={errors.title?.message}
         />
@@ -143,24 +162,49 @@ export function IncidentForm({
           onChange={(value) => setValue('source', value, { shouldValidate: true })}
           error={errors.source?.message}
         />
+        <Select
+          label="Proyecto"
+          name="projectId"
+          placeholder="Seleccionar"
+          options={[{ value: '', label: 'Sin asignar' }, ...projectOptions]}
+          value={projectValue}
+          onChange={(value) => setValue('projectId', value || undefined)}
+        />
+        <Select
+          label="Departamento"
+          name="departmentId"
+          placeholder="Seleccionar"
+          options={[{ value: '', label: 'Sin asignar' }, ...departmentOptions]}
+          value={departmentValue}
+          onChange={(value) => setValue('departmentId', value || undefined)}
+        />
+        <Select
+          label="Municipio"
+          name="municipalityId"
+          placeholder="Seleccionar"
+          options={[{ value: '', label: 'Sin asignar' }, ...municipalityOptions]}
+          value={municipalityValue}
+          onChange={(value) => setValue('municipalityId', value || undefined)}
+        />
+        <Select
+          label="Sector"
+          name="sectorId"
+          placeholder="Seleccionar"
+          options={[{ value: '', label: 'Sin asignar' }, ...sectorOptions]}
+          value={sectorValue}
+          onChange={(value) => setValue('sectorId', value || undefined)}
+        />
         <Input
           label="Reportado por (opcional)"
           {...register('reportedBy')}
           error={errors.reportedBy?.message}
         />
         <Select
-          label="Ruta afectada"
+          label="Ruta afectada (opcional)"
           name="routeName"
           value={routeValue}
-          options={routeOptions}
+          options={[{ value: '', label: 'Sin asignar' }, ...routeOptions]}
           onChange={(value) => setValue('routeName', value || undefined)}
-        />
-        <Select
-          label="Sitio de trabajo destino"
-          name="targetWorkSite"
-          value={siteValue}
-          options={siteOptions}
-          onChange={(value) => setValue('targetWorkSite', value || undefined)}
         />
         <div className="col-span-full">
           <Input
@@ -174,11 +218,11 @@ export function IncidentForm({
           <Textarea
             label="Descripción y recomendación al personal"
             name="description"
-            value={watch('description')}
+            value={descriptionValue}
             onChange={(value) => setValue('description', value, { shouldValidate: true })}
             error={errors.description?.message}
-            rows={4}
-            placeholder="Detalla el riesgo y si el personal puede o no desplazarse..."
+            rows={compact ? 3 : 4}
+            placeholder="Detalla el incidente materializado y su impacto operativo..."
           />
         </div>
         <label className="col-span-full flex cursor-pointer items-start gap-2.5 rounded-md border border-red-500/25 bg-red-50 p-3">
@@ -190,7 +234,7 @@ export function IncidentForm({
           />
           <span className="text-sm">
             <strong>Bloquea el desplazamiento</strong> — el personal no debe transitar por esta
-            ruta (visible en app móvil)
+            zona (visible en app móvil)
           </span>
         </label>
         {showLocationPicker ? (
@@ -214,7 +258,7 @@ export function IncidentForm({
 
       <div className="flex justify-end">
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Publicando...' : 'Publicar incidente de seguridad'}
+          {isSubmitting ? 'Publicando...' : 'Publicar incidente materializado'}
         </Button>
       </div>
     </form>

@@ -1,8 +1,9 @@
-export interface Plant {
+export interface Project {
   id: string
   name: string
   description?: string
   address?: string
+  countryCode: string
   latitude: number
   longitude: number
   isPrimary: boolean
@@ -10,10 +11,12 @@ export interface Plant {
   updatedAt: string
 }
 
-export interface WorkSite {
+export interface Department {
   id: string
   name: string
-  zoneId: string
+  municipalityId: string
+  projectId: string
+  countryCode: string
   description?: string
   latitude: number
   longitude: number
@@ -26,30 +29,32 @@ export type RouteCoordinate = [number, number]
 export interface OperationalRoute {
   id: string
   name: string
-  plantId: string
-  workSiteId: string
+  projectId: string
+  departmentId: string
   color: string
   coordinates: RouteCoordinate[]
   estimatedMinutes?: number
   active: boolean
-  /** Ruta calculada sobre red vial (OSRM); no se sobrescribe al mover planta/sitio automáticamente */
   roadSnapped?: boolean
   updatedAt: string
 }
 
-export interface UpsertPlantPayload {
+export interface UpsertProjectPayload {
   name: string
   description?: string
   address?: string
+  countryCode: string
   latitude: number
   longitude: number
   isPrimary?: boolean
   active?: boolean
 }
 
-export interface UpsertWorkSitePayload {
+export interface UpsertDepartmentPayload {
   name: string
-  zoneId: string
+  municipalityId: string
+  projectId: string
+  countryCode: string
   description?: string
   latitude: number
   longitude: number
@@ -58,8 +63,8 @@ export interface UpsertWorkSitePayload {
 
 export interface UpsertRoutePayload {
   name: string
-  plantId: string
-  workSiteId: string
+  projectId: string
+  departmentId: string
   color: string
   coordinates?: RouteCoordinate[]
   estimatedMinutes?: number
@@ -75,3 +80,12 @@ export const ROUTE_COLOR_PRESETS = [
   '#7c3aed',
   '#0891b2',
 ] as const
+
+/** @deprecated Use Project */
+export type Plant = Project
+/** @deprecated Use Department */
+export type WorkSite = Department
+/** @deprecated Use UpsertProjectPayload */
+export type UpsertPlantPayload = UpsertProjectPayload
+/** @deprecated Use UpsertDepartmentPayload */
+export type UpsertWorkSitePayload = UpsertDepartmentPayload

@@ -6,9 +6,9 @@ import { Card } from '@shared/components/ui/Card'
 import { Input } from '@shared/components/ui/Input'
 import { Select } from '@shared/components/ui/Select'
 import { Textarea } from '@shared/components/ui/Textarea'
-import { ZONE_OPTIONS } from '@shared/constants/filter-options'
+import { COUNTRY_OPTIONS, MUNICIPALITY_OPTIONS } from '@shared/constants/filter-options'
 import { ROUTES } from '@shared/constants/routes'
-import { usePrimaryPlant } from '@shared/hooks/useOperations'
+import { usePrimaryProject, useProjectOptions } from '@shared/hooks/useOperations'
 import { useOperationsStore } from '@shared/stores/operationsStore'
 import { GraphicPointPicker } from '../components/OperationMapEditors'
 
@@ -16,18 +16,26 @@ export function WorkSiteFormPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const isEdit = Boolean(id)
-  const primaryPlant = usePrimaryPlant()
+  const primaryProject = usePrimaryProject()
 
-  const site = useOperationsStore((state) => state.workSites.find((item) => item.id === id))
-  const createWorkSite = useOperationsStore((state) => state.createWorkSite)
-  const updateWorkSite = useOperationsStore((state) => state.updateWorkSite)
+  const department = useOperationsStore((state) => state.departments.find((item) => item.id === id))
+  const createDepartment = useOperationsStore((state) => state.createDepartment)
+  const updateDepartment = useOperationsStore((state) => state.updateDepartment)
 
-  const [name, setName] = useState(site?.name ?? '')
-  const [zoneId, setZoneId] = useState(site?.zoneId ?? ZONE_OPTIONS[0]?.value ?? '')
-  const [description, setDescription] = useState(site?.description ?? '')
-  const [latitude, setLatitude] = useState<number | null>(site?.latitude ?? null)
-  const [longitude, setLongitude] = useState<number | null>(site?.longitude ?? null)
-  const [active, setActive] = useState(site?.active ?? true)
+  const projectOptions = useProjectOptions()
+
+  const [name, setName] = useState(department?.name ?? '')
+  const [municipalityId, setMunicipalityId] = useState(
+    department?.municipalityId ?? MUNICIPALITY_OPTIONS[0]?.value ?? '',
+  )
+  const [projectId, setProjectId] = useState(
+    department?.projectId ?? projectOptions[0]?.value ?? 'project-main',
+  )
+  const [countryCode, setCountryCode] = useState(department?.countryCode ?? 'CO')
+  const [description, setDescription] = useState(department?.description ?? '')
+  const [latitude, setLatitude] = useState<number | null>(department?.latitude ?? null)
+  const [longitude, setLongitude] = useState<number | null>(department?.longitude ?? null)
+  const [active, setActive] = useState(department?.active ?? true)
   const [error, setError] = useState<string | null>(null)
 
   const handleMapChange = (lat: number, lng: number) => {
@@ -43,30 +51,43 @@ export function WorkSiteFormPage() {
       setError('El nombre es obligatorio.')
       return
     }
-    if (!zoneId) {
-      setError('Seleccione un corredor.')
+    if (!municipalityId) {
+      setError('Seleccione un municipio.')
+      return
+    }
+    if (!projectId) {
+      setError('Seleccione un proyecto.')
       return
     }
     if (latitude == null || longitude == null) {
-      setError('Ubique el punto de trabajo en el mapa.')
+      setError('Ubique el departamento en el mapa.')
       return
     }
 
-    const payload = { name, zoneId, description, latitude, longitude, active }
+    const payload = {
+      name,
+      municipalityId,
+      projectId,
+      countryCode,
+      description,
+      latitude,
+      longitude,
+      active,
+    }
 
     if (isEdit && id) {
-      updateWorkSite(id, payload)
+      updateDepartment(id, payload)
     } else {
-      createWorkSite(payload)
+      createDepartment(payload)
     }
 
     navigate(`${ROUTES.operations}?tab=sites`)
   }
 
-  if (isEdit && !site) {
+  if (isEdit && !department) {
     return (
       <section>
-        <PageHeader title="Punto no encontrado" />
+        <PageHeader title="Departamento no encontrado" />
         <Link to={ROUTES.operations}>
           <Button variant="secondary">Volver</Button>
         </Link>
@@ -74,15 +95,15 @@ export function WorkSiteFormPage() {
     )
   }
 
-  const mapDefault: [number, number] = primaryPlant
-    ? [primaryPlant.latitude + 0.05, primaryPlant.longitude + 0.05]
-    : [4.78, -74.02]
+  const mapDefault: [number, number] = primaryProject
+    ? [primaryProject.latitude + 0.05, primaryProject.longitude + 0.05]
+    : [10, -25]
 
   return (
     <section>
       <PageHeader
-        title={isEdit ? 'Editar punto de trabajo' : 'Nuevo punto de trabajo'}
-        description="Marque el sitio sobre el mapa junto a las vías de acceso."
+        title={isEdit ? 'Editar departamento' : 'Nuevo departamento'}
+        description="Marque el departamento operativo sobre el mapa."
         actions={
           <Link to={`${ROUTES.operations}?tab=sites`}>
             <Button variant="secondary" size="sm">
@@ -97,13 +118,33 @@ export function WorkSiteFormPage() {
           <form className="neo-form-stack" onSubmit={handleSubmit}>
             {error ? <p className="neo-alert-error m-0">{error}</p> : null}
             <Input label="Nombre" name="name" value={name} onChange={(e) => setName(e.target.value)} />
-            <Select label="Corredor" name="zoneId" value={zoneId} options={ZONE_OPTIONS} onChange={setZoneId} />
+            <Select
+              label="Proyecto"
+              name="projectId"
+              value={projectId}
+              options={projectOptions}
+              onChange={setProjectId}
+            />
+            <Select
+              label="País"
+              name="countryCode"
+              value={countryCode}
+              options={COUNTRY_OPTIONS}
+              onChange={setCountryCode}
+            />
+            <Select
+              label="Municipio"
+              name="municipalityId"
+              value={municipalityId}
+              options={MUNICIPALITY_OPTIONS}
+              onChange={setMunicipalityId}
+            />
             <Textarea label="Descripción" name="description" value={description} onChange={setDescription} rows={2} />
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" checked={active} onChange={(e) => setActive(e.target.checked)} />
               Activo
             </label>
-            <Button type="submit">{isEdit ? 'Guardar cambios' : 'Crear punto'}</Button>
+            <Button type="submit">{isEdit ? 'Guardar cambios' : 'Crear departamento'}</Button>
           </form>
         </Card>
 
@@ -113,11 +154,11 @@ export function WorkSiteFormPage() {
             latitude={latitude}
             longitude={longitude}
             onChange={handleMapChange}
-            markerLabel="S"
+            markerLabel="D"
             markerColor="#059669"
-            hint="Clic o arrastre para ubicar el sitio de trabajo."
+            hint="Clic o arrastre para ubicar el departamento."
             defaultCenter={mapDefault}
-            excludeSiteId={id}
+            excludeDepartmentId={id}
           />
         </Card>
       </div>

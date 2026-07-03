@@ -22,7 +22,23 @@ export function MapIncidentModal({
   const createIncident = useCreateIncident()
 
   const handleSubmit = async (values: CreateIncidentFormValues) => {
-    const incident = await createIncident.mutateAsync(values)
+    const incident = await createIncident.mutateAsync({
+      title: values.title,
+      description: values.description,
+      type: values.type,
+      severity: values.severity,
+      source: values.source,
+      location: values.location,
+      latitude: values.latitude,
+      longitude: values.longitude,
+      blocksTransit: values.blocksTransit,
+      routeName: values.routeName,
+      projectId: values.projectId,
+      departmentId: values.departmentId,
+      municipalityId: values.municipalityId,
+      sectorId: values.sectorId,
+      reportedBy: values.reportedBy,
+    })
     onCreated?.(incident.id)
     onClose()
   }
@@ -33,7 +49,7 @@ export function MapIncidentModal({
     <Modal
       open={open && hasLocation}
       onClose={onClose}
-      title="Registrar incidente de seguridad"
+      title="Registrar incidente (riesgo materializado)"
       description="Complete el formulario. La ubicación se tomó del punto seleccionado en el mapa."
       size="xl"
     >

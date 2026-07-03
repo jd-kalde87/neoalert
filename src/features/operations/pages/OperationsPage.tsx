@@ -5,15 +5,15 @@ import { Button } from '@shared/components/ui/Button'
 import { Card } from '@shared/components/ui/Card'
 import { Badge } from '@shared/components/ui/Badge'
 import { ROUTES } from '@shared/constants/routes'
-import { zoneLabel } from '@shared/hooks/useOperations'
+import { municipalityLabel } from '@shared/hooks/useOperations'
 import { useOperationsStore } from '@shared/stores/operationsStore'
 import { cn } from '@shared/utils/cn'
 
 type Tab = 'plants' | 'sites' | 'routes'
 
 const TABS: { id: Tab; label: string; icon: typeof Building2 }[] = [
-  { id: 'plants', label: 'Plantas', icon: Building2 },
-  { id: 'sites', label: 'Puntos de trabajo', icon: MapPin },
+  { id: 'plants', label: 'Proyectos', icon: Building2 },
+  { id: 'sites', label: 'Departamentos', icon: MapPin },
   { id: 'routes', label: 'Rutas', icon: Route },
 ]
 
@@ -21,28 +21,28 @@ export function OperationsPage() {
   const [params, setParams] = useSearchParams()
   const tab = (params.get('tab') as Tab) || 'plants'
 
-  const plants = useOperationsStore((state) => state.plants)
-  const workSites = useOperationsStore((state) => state.workSites)
+  const projects = useOperationsStore((state) => state.projects)
+  const departments = useOperationsStore((state) => state.departments)
   const routes = useOperationsStore((state) => state.routes)
-  const deletePlant = useOperationsStore((state) => state.deletePlant)
-  const deleteWorkSite = useOperationsStore((state) => state.deleteWorkSite)
+  const deleteProject = useOperationsStore((state) => state.deleteProject)
+  const deleteDepartment = useOperationsStore((state) => state.deleteDepartment)
   const deleteRoute = useOperationsStore((state) => state.deleteRoute)
 
   const setTab = (next: Tab) => setParams({ tab: next })
 
-  const handleDeletePlant = (id: string, name: string) => {
-    if (!confirm(`¿Eliminar planta "${name}"?`)) return
+  const handleDeleteProject = (id: string, name: string) => {
+    if (!confirm(`¿Eliminar proyecto "${name}"?`)) return
     try {
-      deletePlant(id)
+      deleteProject(id)
     } catch (error) {
       alert(error instanceof Error ? error.message : 'No se pudo eliminar')
     }
   }
 
-  const handleDeleteSite = (id: string, name: string) => {
-    if (!confirm(`¿Eliminar punto "${name}"?`)) return
+  const handleDeleteDepartment = (id: string, name: string) => {
+    if (!confirm(`¿Eliminar departamento "${name}"?`)) return
     try {
-      deleteWorkSite(id)
+      deleteDepartment(id)
     } catch (error) {
       alert(error instanceof Error ? error.message : 'No se pudo eliminar')
     }
@@ -56,16 +56,16 @@ export function OperationsPage() {
   return (
     <section>
       <PageHeader
-        title="Plantas, puntos y rutas"
-        description="Catálogo operativo: plantas de origen, sitios de trabajo y corredores planta → sitio. Los cambios se reflejan en mapas, incidentes y asistencia."
+        title="Proyectos, departamentos y rutas"
+        description="Catálogo territorial: proyectos, departamentos operativos y rutas entre ellos. Los cambios se reflejan en el mapa de riesgos."
         actions={
           tab === 'plants' ? (
             <Link to={ROUTES.operationsPlantNew}>
-              <Button>Nueva planta</Button>
+              <Button>Nuevo proyecto</Button>
             </Link>
           ) : tab === 'sites' ? (
             <Link to={ROUTES.operationsSiteNew}>
-              <Button>Nuevo punto</Button>
+              <Button>Nuevo departamento</Button>
             </Link>
           ) : (
             <Link to={ROUTES.operationsRouteNew}>
@@ -104,6 +104,7 @@ export function OperationsPage() {
               <thead>
                 <tr>
                   <th>Nombre</th>
+                  <th>País</th>
                   <th>Coordenadas</th>
                   <th>Principal</th>
                   <th>Estado</th>
@@ -111,26 +112,27 @@ export function OperationsPage() {
                 </tr>
               </thead>
               <tbody>
-                {plants.map((plant) => (
-                  <tr key={plant.id}>
+                {projects.map((project) => (
+                  <tr key={project.id}>
                     <td>
-                      <strong className="block text-slate-900">{plant.name}</strong>
-                      {plant.description ? (
-                        <span className="text-xs text-slate-500">{plant.description}</span>
+                      <strong className="block text-slate-900">{project.name}</strong>
+                      {project.description ? (
+                        <span className="text-xs text-slate-500">{project.description}</span>
                       ) : null}
                     </td>
+                    <td>{project.countryCode}</td>
                     <td className="text-xs tabular-nums text-slate-500">
-                      {plant.latitude.toFixed(4)}, {plant.longitude.toFixed(4)}
+                      {project.latitude.toFixed(4)}, {project.longitude.toFixed(4)}
                     </td>
-                    <td>{plant.isPrimary ? <Badge variant="info">Principal</Badge> : '—'}</td>
+                    <td>{project.isPrimary ? <Badge variant="info">Principal</Badge> : '—'}</td>
                     <td>
-                      <Badge variant={plant.active ? 'success' : 'default'}>
-                        {plant.active ? 'Activa' : 'Inactiva'}
+                      <Badge variant={project.active ? 'success' : 'default'}>
+                        {project.active ? 'Activo' : 'Inactivo'}
                       </Badge>
                     </td>
                     <td className="space-x-2 whitespace-nowrap">
                       <Link
-                        to={ROUTES.operationsPlantEdit.replace(':id', plant.id)}
+                        to={ROUTES.operationsPlantEdit.replace(':id', project.id)}
                         className="neo-table-link"
                       >
                         Editar
@@ -138,7 +140,7 @@ export function OperationsPage() {
                       <button
                         type="button"
                         className="text-xs font-medium text-red-600 hover:underline"
-                        onClick={() => handleDeletePlant(plant.id, plant.name)}
+                        onClick={() => handleDeleteProject(project.id, project.name)}
                       >
                         Eliminar
                       </button>
@@ -158,30 +160,30 @@ export function OperationsPage() {
               <thead>
                 <tr>
                   <th>Nombre</th>
-                  <th>Corredor</th>
+                  <th>Municipio</th>
                   <th>Coordenadas</th>
                   <th>Estado</th>
                   <th />
                 </tr>
               </thead>
               <tbody>
-                {workSites.map((site) => (
-                  <tr key={site.id}>
+                {departments.map((department) => (
+                  <tr key={department.id}>
                     <td>
-                      <strong className="block text-slate-900">{site.name}</strong>
+                      <strong className="block text-slate-900">{department.name}</strong>
                     </td>
-                    <td>{zoneLabel(site.zoneId)}</td>
+                    <td>{municipalityLabel(department.municipalityId)}</td>
                     <td className="text-xs tabular-nums text-slate-500">
-                      {site.latitude.toFixed(4)}, {site.longitude.toFixed(4)}
+                      {department.latitude.toFixed(4)}, {department.longitude.toFixed(4)}
                     </td>
                     <td>
-                      <Badge variant={site.active ? 'success' : 'default'}>
-                        {site.active ? 'Activo' : 'Inactivo'}
+                      <Badge variant={department.active ? 'success' : 'default'}>
+                        {department.active ? 'Activo' : 'Inactivo'}
                       </Badge>
                     </td>
                     <td className="space-x-2 whitespace-nowrap">
                       <Link
-                        to={ROUTES.operationsSiteEdit.replace(':id', site.id)}
+                        to={ROUTES.operationsSiteEdit.replace(':id', department.id)}
                         className="neo-table-link"
                       >
                         Editar
@@ -189,7 +191,7 @@ export function OperationsPage() {
                       <button
                         type="button"
                         className="text-xs font-medium text-red-600 hover:underline"
-                        onClick={() => handleDeleteSite(site.id, site.name)}
+                        onClick={() => handleDeleteDepartment(department.id, department.name)}
                       >
                         Eliminar
                       </button>
@@ -209,7 +211,7 @@ export function OperationsPage() {
               <thead>
                 <tr>
                   <th>Ruta</th>
-                  <th>Planta → Sitio</th>
+                  <th>Proyecto → Departamento</th>
                   <th>Tiempo est.</th>
                   <th>Estado</th>
                   <th />
@@ -217,16 +219,19 @@ export function OperationsPage() {
               </thead>
               <tbody>
                 {routes.map((route) => {
-                  const plant = plants.find((item) => item.id === route.plantId)
-                  const site = workSites.find((item) => item.id === route.workSiteId)
+                  const project = projects.find((item) => item.id === route.projectId)
+                  const department = departments.find((item) => item.id === route.departmentId)
                   return (
                     <tr key={route.id}>
                       <td>
-                        <span className="mr-2 inline-block size-3 rounded-full" style={{ background: route.color }} />
+                        <span
+                          className="mr-2 inline-block size-3 rounded-full"
+                          style={{ background: route.color }}
+                        />
                         <strong className="text-slate-900">{route.name}</strong>
                       </td>
                       <td className="text-sm text-slate-600">
-                        {plant?.name ?? '—'} → {site?.name ?? '—'}
+                        {project?.name ?? '—'} → {department?.name ?? '—'}
                       </td>
                       <td>{route.estimatedMinutes ? `${route.estimatedMinutes} min` : '—'}</td>
                       <td>

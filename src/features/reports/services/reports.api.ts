@@ -3,8 +3,8 @@ import type { ReportData, ReportType } from '../types/report.types'
 
 function filterMultiplier(filters: GlobalFilters) {
   let m = 1
-  if (filters.zoneId) m *= 0.75
-  if (filters.siteId) m *= 0.85
+  if (filters.municipalityId) m *= 0.75
+  if (filters.departmentId) m *= 0.85
   if (filters.dateFrom || filters.dateTo) m *= 0.95
   return m
 }

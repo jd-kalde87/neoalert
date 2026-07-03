@@ -1,18 +1,18 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import {
-  SEED_PLANTS,
+  SEED_DEPARTMENTS,
+  SEED_PROJECTS,
   SEED_ROUTES,
-  SEED_WORK_SITES,
 } from '@shared/constants/operations'
 import type {
+  Department,
   OperationalRoute,
-  Plant,
+  Project,
   RouteCoordinate,
-  UpsertPlantPayload,
+  UpsertDepartmentPayload,
+  UpsertProjectPayload,
   UpsertRoutePayload,
-  UpsertWorkSitePayload,
-  WorkSite,
 } from '@shared/types/operations.types'
 
 function now() {
@@ -20,83 +20,156 @@ function now() {
 }
 
 export function buildRouteCoordinates(
-  plant: Pick<Plant, 'latitude' | 'longitude'>,
-  site: Pick<WorkSite, 'latitude' | 'longitude'>,
+  project: Pick<Project, 'latitude' | 'longitude'>,
+  department: Pick<Department, 'latitude' | 'longitude'>,
 ): RouteCoordinate[] {
-  const midLat = (plant.latitude + site.latitude) / 2
-  const midLng = (plant.longitude + site.longitude) / 2
+  const midLat = (project.latitude + department.latitude) / 2
+  const midLng = (project.longitude + department.longitude) / 2
   return [
-    [plant.latitude, plant.longitude],
+    [project.latitude, project.longitude],
     [midLat, midLng],
-    [site.latitude, site.longitude],
+    [department.latitude, department.longitude],
   ]
 }
 
 interface OperationsState {
-  plants: Plant[]
-  workSites: WorkSite[]
+  projects: Project[]
+  departments: Department[]
   routes: OperationalRoute[]
-  createPlant: (payload: UpsertPlantPayload) => Plant
-  updatePlant: (id: string, payload: UpsertPlantPayload) => Plant
-  deletePlant: (id: string) => void
-  createWorkSite: (payload: UpsertWorkSitePayload) => WorkSite
-  updateWorkSite: (id: string, payload: UpsertWorkSitePayload) => WorkSite
-  deleteWorkSite: (id: string) => void
+  createProject: (payload: UpsertProjectPayload) => Project
+  updateProject: (id: string, payload: UpsertProjectPayload) => Project
+  deleteProject: (id: string) => void
+  createDepartment: (payload: UpsertDepartmentPayload) => Department
+  updateDepartment: (id: string, payload: UpsertDepartmentPayload) => Department
+  deleteDepartment: (id: string) => void
   createRoute: (payload: UpsertRoutePayload) => OperationalRoute
   updateRoute: (id: string, payload: UpsertRoutePayload) => OperationalRoute
   deleteRoute: (id: string) => void
-  getPrimaryPlant: () => Plant | undefined
-  getActivePlants: () => Plant[]
-  getActiveWorkSites: () => WorkSite[]
+  getPrimaryProject: () => Project | undefined
+  getActiveProjects: () => Project[]
+  getActiveDepartments: () => Department[]
   getActiveRoutes: () => OperationalRoute[]
 }
 
 function syncRoutesForEndpoints(
   routes: OperationalRoute[],
-  plantId: string | undefined,
-  workSiteId: string | undefined,
-  plants: Plant[],
-  workSites: WorkSite[],
+  projectId: string | undefined,
+  departmentId: string | undefined,
+  projects: Project[],
+  departments: Department[],
 ) {
   return routes.map((route) => {
-    const matchesPlant = Boolean(plantId && route.plantId === plantId)
-    const matchesSite = Boolean(workSiteId && route.workSiteId === workSiteId)
-    if (!matchesPlant && !matchesSite) return route
+    const matchesProject = Boolean(projectId && route.projectId === projectId)
+    const matchesDepartment = Boolean(departmentId && route.departmentId === departmentId)
+    if (!matchesProject && !matchesDepartment) return route
 
-    const plant = plants.find((item) => item.id === route.plantId)
-    const site = workSites.find((item) => item.id === route.workSiteId)
-    if (!plant || !site) return route
+    const project = projects.find((item) => item.id === route.projectId)
+    const department = departments.find((item) => item.id === route.departmentId)
+    if (!project || !department) return route
 
     return {
       ...route,
-      coordinates: route.roadSnapped ? route.coordinates : buildRouteCoordinates(plant, site),
+      coordinates: route.roadSnapped ? route.coordinates : buildRouteCoordinates(project, department),
       updatedAt: now(),
     }
   })
 }
 
+function migrateLegacyProject(raw: Record<string, unknown>): Project {
+  return {
+    id: String(raw.id),
+    name: String(raw.name),
+    description: raw.description ? String(raw.description) : undefined,
+    address: raw.address ? String(raw.address) : undefined,
+    countryCode: String(raw.countryCode ?? 'CO'),
+    latitude: Number(raw.latitude),
+    longitude: Number(raw.longitude),
+    isPrimary: Boolean(raw.isPrimary),
+    active: raw.active !== false,
+    updatedAt: String(raw.updatedAt ?? now()),
+  }
+}
+
+function migrateLegacyDepartment(raw: Record<string, unknown>): Department {
+  return {
+    id: String(raw.id),
+    name: String(raw.name),
+    municipalityId: String(raw.municipalityId ?? raw.zoneId ?? 'muni-bogota'),
+    projectId: String(raw.projectId ?? raw.plantId ?? 'project-main'),
+    countryCode: String(raw.countryCode ?? 'CO'),
+    description: raw.description ? String(raw.description) : undefined,
+    latitude: Number(raw.latitude),
+    longitude: Number(raw.longitude),
+    active: raw.active !== false,
+    updatedAt: String(raw.updatedAt ?? now()),
+  }
+}
+
+function migrateLegacyRoute(raw: Record<string, unknown>): OperationalRoute {
+  return {
+    id: String(raw.id),
+    name: String(raw.name),
+    projectId: String(raw.projectId ?? raw.plantId),
+    departmentId: String(raw.departmentId ?? raw.workSiteId),
+    color: String(raw.color),
+    coordinates: raw.coordinates as RouteCoordinate[],
+    estimatedMinutes: raw.estimatedMinutes ? Number(raw.estimatedMinutes) : undefined,
+    active: raw.active !== false,
+    roadSnapped: Boolean(raw.roadSnapped),
+    updatedAt: String(raw.updatedAt ?? now()),
+  }
+}
+
+type PersistedOperations = {
+  projects?: Project[]
+  departments?: Department[]
+  routes?: OperationalRoute[]
+  plants?: Project[]
+  workSites?: Department[]
+}
+
+function migratePersistedState(persisted: PersistedOperations): Pick<
+  OperationsState,
+  'projects' | 'departments' | 'routes'
+> {
+  const projects = (persisted.projects ?? persisted.plants ?? SEED_PROJECTS).map((item) =>
+    migrateLegacyProject(item as unknown as Record<string, unknown>),
+  )
+  const departments = (persisted.departments ?? persisted.workSites ?? SEED_DEPARTMENTS).map(
+    (item) => migrateLegacyDepartment(item as unknown as Record<string, unknown>),
+  )
+  const routes = (persisted.routes ?? SEED_ROUTES).map((item) =>
+    migrateLegacyRoute(item as unknown as Record<string, unknown>),
+  )
+  return { projects, departments, routes }
+}
+
 export const useOperationsStore = create<OperationsState>()(
   persist(
     (set, get) => ({
-      plants: SEED_PLANTS,
-      workSites: SEED_WORK_SITES,
+      projects: SEED_PROJECTS,
+      departments: SEED_DEPARTMENTS,
       routes: SEED_ROUTES,
 
-      getPrimaryPlant: () => {
-        const { plants } = get()
-        return plants.find((item) => item.isPrimary && item.active) ?? plants.find((item) => item.active)
+      getPrimaryProject: () => {
+        const { projects } = get()
+        return (
+          projects.find((item) => item.isPrimary && item.active) ??
+          projects.find((item) => item.active)
+        )
       },
 
-      getActivePlants: () => get().plants.filter((item) => item.active),
-      getActiveWorkSites: () => get().workSites.filter((item) => item.active),
+      getActiveProjects: () => get().projects.filter((item) => item.active),
+      getActiveDepartments: () => get().departments.filter((item) => item.active),
       getActiveRoutes: () => get().routes.filter((item) => item.active),
 
-      createPlant: (payload) => {
-        const plant: Plant = {
+      createProject: (payload) => {
+        const project: Project = {
           id: crypto.randomUUID(),
           name: payload.name.trim(),
           description: payload.description?.trim(),
           address: payload.address?.trim(),
+          countryCode: payload.countryCode,
           latitude: payload.latitude,
           longitude: payload.longitude,
           isPrimary: payload.isPrimary ?? false,
@@ -105,19 +178,18 @@ export const useOperationsStore = create<OperationsState>()(
         }
 
         set((state) => ({
-          plants:
-            plant.isPrimary
-              ? [...state.plants.map((item) => ({ ...item, isPrimary: false })), plant]
-              : [...state.plants, plant],
+          projects: project.isPrimary
+            ? [...state.projects.map((item) => ({ ...item, isPrimary: false })), project]
+            : [...state.projects, project],
         }))
 
-        return plant
+        return project
       },
 
-      updatePlant: (id, payload) => {
-        let updated!: Plant
+      updateProject: (id, payload) => {
+        let updated!: Project
         set((state) => {
-          const plants = state.plants.map((item) => {
+          const projects = state.projects.map((item) => {
             if (item.id !== id) {
               return payload.isPrimary ? { ...item, isPrimary: false } : item
             }
@@ -126,6 +198,7 @@ export const useOperationsStore = create<OperationsState>()(
               name: payload.name.trim(),
               description: payload.description?.trim(),
               address: payload.address?.trim(),
+              countryCode: payload.countryCode,
               latitude: payload.latitude,
               longitude: payload.longitude,
               isPrimary: payload.isPrimary ?? item.isPrimary,
@@ -135,47 +208,57 @@ export const useOperationsStore = create<OperationsState>()(
             return updated
           })
 
-          const routes = syncRoutesForEndpoints(state.routes, id, undefined, plants, state.workSites)
+          const routes = syncRoutesForEndpoints(
+            state.routes,
+            id,
+            undefined,
+            projects,
+            state.departments,
+          )
 
-          return { plants, routes }
+          return { projects, routes }
         })
         return updated
       },
 
-      deletePlant: (id) => {
+      deleteProject: (id) => {
         const { routes } = get()
-        if (routes.some((route) => route.plantId === id)) {
-          throw new Error('No se puede eliminar: hay rutas asociadas a esta planta.')
+        if (routes.some((route) => route.projectId === id)) {
+          throw new Error('No se puede eliminar: hay rutas asociadas a este proyecto.')
         }
         set((state) => ({
-          plants: state.plants.filter((item) => item.id !== id),
+          projects: state.projects.filter((item) => item.id !== id),
         }))
       },
 
-      createWorkSite: (payload) => {
-        const site: WorkSite = {
+      createDepartment: (payload) => {
+        const department: Department = {
           id: crypto.randomUUID(),
           name: payload.name.trim(),
-          zoneId: payload.zoneId,
+          municipalityId: payload.municipalityId,
+          projectId: payload.projectId,
+          countryCode: payload.countryCode,
           description: payload.description?.trim(),
           latitude: payload.latitude,
           longitude: payload.longitude,
           active: payload.active ?? true,
           updatedAt: now(),
         }
-        set((state) => ({ workSites: [...state.workSites, site] }))
-        return site
+        set((state) => ({ departments: [...state.departments, department] }))
+        return department
       },
 
-      updateWorkSite: (id, payload) => {
-        let updated!: WorkSite
+      updateDepartment: (id, payload) => {
+        let updated!: Department
         set((state) => {
-          const workSites = state.workSites.map((item) => {
+          const departments = state.departments.map((item) => {
             if (item.id !== id) return item
             updated = {
               ...item,
               name: payload.name.trim(),
-              zoneId: payload.zoneId,
+              municipalityId: payload.municipalityId,
+              projectId: payload.projectId,
+              countryCode: payload.countryCode,
               description: payload.description?.trim(),
               latitude: payload.latitude,
               longitude: payload.longitude,
@@ -185,39 +268,45 @@ export const useOperationsStore = create<OperationsState>()(
             return updated
           })
 
-          const routes = syncRoutesForEndpoints(state.routes, undefined, id, state.plants, workSites)
+          const routes = syncRoutesForEndpoints(
+            state.routes,
+            undefined,
+            id,
+            state.projects,
+            departments,
+          )
 
-          return { workSites, routes }
+          return { departments, routes }
         })
         return updated
       },
 
-      deleteWorkSite: (id) => {
+      deleteDepartment: (id) => {
         const { routes } = get()
-        if (routes.some((route) => route.workSiteId === id)) {
-          throw new Error('No se puede eliminar: hay rutas asociadas a este punto de trabajo.')
+        if (routes.some((route) => route.departmentId === id)) {
+          throw new Error('No se puede eliminar: hay rutas asociadas a este departamento.')
         }
         set((state) => ({
-          workSites: state.workSites.filter((item) => item.id !== id),
+          departments: state.departments.filter((item) => item.id !== id),
         }))
       },
 
       createRoute: (payload) => {
-        const { plants, workSites } = get()
-        const plant = plants.find((item) => item.id === payload.plantId)
-        const site = workSites.find((item) => item.id === payload.workSiteId)
-        if (!plant || !site) throw new Error('Planta o punto de trabajo no encontrado')
+        const { projects, departments } = get()
+        const project = projects.find((item) => item.id === payload.projectId)
+        const department = departments.find((item) => item.id === payload.departmentId)
+        if (!project || !department) throw new Error('Proyecto o departamento no encontrado')
 
         const route: OperationalRoute = {
           id: crypto.randomUUID(),
           name: payload.name.trim(),
-          plantId: payload.plantId,
-          workSiteId: payload.workSiteId,
+          projectId: payload.projectId,
+          departmentId: payload.departmentId,
           color: payload.color,
           coordinates:
             payload.coordinates && payload.coordinates.length >= 2
               ? payload.coordinates
-              : buildRouteCoordinates(plant, site),
+              : buildRouteCoordinates(project, department),
           estimatedMinutes: payload.estimatedMinutes,
           active: payload.active ?? true,
           roadSnapped: payload.roadSnapped ?? false,
@@ -231,22 +320,22 @@ export const useOperationsStore = create<OperationsState>()(
       updateRoute: (id, payload) => {
         let updated!: OperationalRoute
         set((state) => {
-          const plant = state.plants.find((item) => item.id === payload.plantId)
-          const site = state.workSites.find((item) => item.id === payload.workSiteId)
-          if (!plant || !site) throw new Error('Planta o punto de trabajo no encontrado')
+          const project = state.projects.find((item) => item.id === payload.projectId)
+          const department = state.departments.find((item) => item.id === payload.departmentId)
+          if (!project || !department) throw new Error('Proyecto o departamento no encontrado')
 
           const routes = state.routes.map((item) => {
             if (item.id !== id) return item
             updated = {
               ...item,
               name: payload.name.trim(),
-              plantId: payload.plantId,
-              workSiteId: payload.workSiteId,
+              projectId: payload.projectId,
+              departmentId: payload.departmentId,
               color: payload.color,
               coordinates:
                 payload.coordinates && payload.coordinates.length >= 2
                   ? payload.coordinates
-                  : buildRouteCoordinates(plant, site),
+                  : buildRouteCoordinates(project, department),
               estimatedMinutes: payload.estimatedMinutes,
               active: payload.active ?? item.active,
               roadSnapped: payload.roadSnapped ?? item.roadSnapped ?? false,
@@ -266,6 +355,22 @@ export const useOperationsStore = create<OperationsState>()(
         }))
       },
     }),
-    { name: 'neoalert-operations' },
+    {
+      name: 'neoalert-operations',
+      version: 3,
+      migrate: (persisted, version) => {
+        if (version < 3) {
+          return {
+            projects: SEED_PROJECTS,
+            departments: SEED_DEPARTMENTS,
+            routes: SEED_ROUTES,
+          }
+        }
+        if (version < 2) {
+          return migratePersistedState(persisted as PersistedOperations)
+        }
+        return persisted as Pick<OperationsState, 'projects' | 'departments' | 'routes'>
+      },
+    },
   ),
 )

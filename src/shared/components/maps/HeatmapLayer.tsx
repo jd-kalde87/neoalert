@@ -2,14 +2,31 @@ import { useEffect, useRef } from 'react'
 import L from 'leaflet'
 import 'leaflet.heat'
 import { useMap } from 'react-leaflet'
-import type { MapIncident } from '@shared/types/map.types'
+import type { HeatmapPoint } from '@shared/types/map.types'
 
 interface HeatmapLayerProps {
-  incidents: MapIncident[]
+  points: HeatmapPoint[]
   visible: boolean
+  radius?: number
+  blur?: number
+  maxZoom?: number
+  gradient?: Record<number, string>
 }
 
-export function HeatmapLayer({ incidents, visible }: HeatmapLayerProps) {
+export function HeatmapLayer({
+  points,
+  visible,
+  radius = 28,
+  blur = 22,
+  maxZoom = 16,
+  gradient = {
+    0.2: '#3b82f6',
+    0.45: '#22c55e',
+    0.65: '#eab308',
+    0.85: '#f97316',
+    1: '#dc2626',
+  },
+}: HeatmapLayerProps) {
   const map = useMap()
   const layerRef = useRef<L.Layer | null>(null)
 
@@ -29,26 +46,20 @@ export function HeatmapLayer({ incidents, visible }: HeatmapLayerProps) {
       critical: 1,
     } as const
 
-    const points = incidents.map(
-      (incident) =>
+    const heatPoints = points.map(
+      (point) =>
         [
-          incident.latitude,
-          incident.longitude,
-          intensityBySeverity[incident.severity],
+          point.latitude,
+          point.longitude,
+          intensityBySeverity[point.severity],
         ] as [number, number, number],
     )
 
-    const layer = L.heatLayer(points, {
-      radius: 28,
-      blur: 22,
-      maxZoom: 16,
-      gradient: {
-        0.2: '#3b82f6',
-        0.45: '#22c55e',
-        0.65: '#eab308',
-        0.85: '#f97316',
-        1: '#dc2626',
-      },
+    const layer = L.heatLayer(heatPoints, {
+      radius,
+      blur,
+      maxZoom,
+      gradient,
     })
 
     layer.addTo(map)
@@ -58,7 +69,7 @@ export function HeatmapLayer({ incidents, visible }: HeatmapLayerProps) {
       map.removeLayer(layer)
       layerRef.current = null
     }
-  }, [incidents, map, visible])
+  }, [points, map, visible, radius, blur, maxZoom, gradient])
 
   return null
 }

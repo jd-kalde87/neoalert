@@ -3,20 +3,22 @@ import { Outlet, useLocation } from 'react-router-dom'
 import { OperativeMap } from '@shared/components/maps/OperativeMap'
 import { AsyncBoundary } from '@shared/components/feedback/AsyncBoundary'
 import { ROUTES } from '@shared/constants/routes'
-import { MapIncidentModal } from '@features/maps/components/MapIncidentModal'
+import { MapRiskModal } from '@features/risks/components/MapRiskModal'
+import { useMapRisks } from '@features/risks/hooks/useMapRisks'
 import { MapLegend } from '@features/maps/components/MapLegend'
+import { ColombiaOverlayLegend } from '@shared/components/maps/ColombiaOverlayLegend'
 import { MapViewNav } from '@features/maps/components/MapViewNav'
-import { useMapIncidents } from '@features/maps/hooks/useMapIncidents'
 import { useMapStore } from '@features/maps/stores/mapStore'
 import { cn } from '@shared/utils/cn'
 
 export function MapLayout() {
   const location = useLocation()
-  const { data, isLoading, isError, refetch } = useMapIncidents()
+  const { data, isLoading, isError, refetch } = useMapRisks()
   const layerMode = useMapStore((state) => state.layerMode)
-  const selectedIncidentId = useMapStore((state) => state.selectedIncidentId)
+  const selectedRiskId = useMapStore((state) => state.selectedRiskId)
   const setLayerMode = useMapStore((state) => state.setLayerMode)
-  const selectIncident = useMapStore((state) => state.selectIncident)
+  const selectRisk = useMapStore((state) => state.selectRisk)
+  const colombiaOverlay = useMapStore((state) => state.colombiaOverlay)
 
   const [modalOpen, setModalOpen] = useState(false)
   const [draftLocation, setDraftLocation] = useState<{ lat: number; lng: number } | null>(null)
@@ -24,10 +26,12 @@ export function MapLayout() {
   useEffect(() => {
     if (location.pathname === ROUTES.heatmap) {
       setLayerMode('heatmap')
+    } else if (location.pathname === ROUTES.maps) {
+      setLayerMode('standard')
     }
   }, [location.pathname, setLayerMode])
 
-  const incidents = data?.incidents ?? []
+  const risks = data?.risks ?? []
 
   const handleMapClick = (lat: number, lng: number) => {
     setDraftLocation({ lat, lng })
@@ -46,21 +50,21 @@ export function MapLayout() {
           '-m-3 flex min-h-[calc(100vh-6.5rem)] flex-col lg:-m-4 lg:min-h-[calc(100vh-7rem)] lg:flex-row',
         )}
       >
-        <section className="relative min-h-[50vh] flex-1 lg:min-h-0" aria-label="Mapa operativo">
+        <section className="relative min-h-[50vh] flex-1 lg:min-h-0" aria-label="Mapa de riesgos">
           <AsyncBoundary
             isLoading={isLoading}
             isError={isError}
-            loadingTitle="Cargando mapa"
+            loadingTitle="Cargando mapa de riesgos"
             errorTitle="No se pudo cargar el mapa"
             onRetry={() => refetch()}
           >
             <OperativeMap
-              incidents={incidents}
+              risks={risks}
               layerMode={layerMode}
-              selectedIncidentId={selectedIncidentId}
+              selectedRiskId={selectedRiskId}
               onLayerChange={setLayerMode}
-              onSelectIncident={selectIncident}
-              onRegisterIncidentAt={handleMapClick}
+              onSelectRisk={selectRisk}
+              onRegisterRiskAt={handleMapClick}
               draftMarker={
                 draftLocation
                   ? { latitude: draftLocation.lat, longitude: draftLocation.lng }
@@ -74,22 +78,30 @@ export function MapLayout() {
           <div className="space-y-3 border-b border-slate-200 bg-white px-4 py-3">
             <MapViewNav />
             <MapLegend compact />
+            {colombiaOverlay !== 'none' ? (
+              <ColombiaOverlayLegend overlay={colombiaOverlay} className="pointer-events-none" />
+            ) : (
+              <p className="text-[0.6875rem] leading-relaxed text-slate-500">
+                Active <strong>Riesgo CO</strong> para ver polígonos municipales del shapefile
+                oficial 2026. Clic en un municipio para ver su nivel de criticidad.
+              </p>
+            )}
           </div>
 
           <div className="neo-scroll flex-1 overflow-y-auto p-4">
             <Outlet
               context={{
-                incidents,
+                risks,
                 summary: data?.summary,
-                selectIncident,
-                selectedIncidentId,
+                selectRisk,
+                selectedRiskId,
               }}
             />
           </div>
         </aside>
       </div>
 
-      <MapIncidentModal
+      <MapRiskModal
         open={modalOpen}
         latitude={draftLocation?.lat ?? null}
         longitude={draftLocation?.lng ?? null}

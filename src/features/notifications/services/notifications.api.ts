@@ -1,3 +1,4 @@
+import { matchesTerritoryFilters } from '@shared/utils/territoryFilters'
 import type { GlobalFilters } from '@shared/types/common.types'
 import type {
   NotificationFilters,
@@ -89,11 +90,7 @@ const seedNotifications: NotificationItem[] = [
 let notificationsDb = [...seedNotifications]
 
 function applyGlobalFilters(items: NotificationItem[], filters: GlobalFilters) {
-  return items.filter((item) => {
-    if (filters.zoneId && item.zoneId && item.zoneId !== filters.zoneId) return false
-    if (filters.siteId && item.siteId && item.siteId !== filters.siteId) return false
-    return true
-  })
+  return items.filter((item) => matchesTerritoryFilters(item, filters))
 }
 
 function applyLocalFilters(items: NotificationItem[], filters: NotificationFilters) {
