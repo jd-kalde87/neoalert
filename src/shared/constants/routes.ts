@@ -16,6 +16,7 @@ export const ROUTES = {
   incidentNew: '/incidents/new',
   incidentDetail: '/incidents/:id',
   notifications: '/notifications',
+  newsInterest: '/noticias',
   imports: '/imports',
   importUpload: '/imports/upload',
   importDetail: '/imports/:id',

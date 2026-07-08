@@ -130,7 +130,10 @@ export function GlobalFilterBar() {
     projectId: filters.projectId,
     municipalityId: filters.municipalityId,
   })
-  const municipalityOptions = useMunicipalityOptions(filters.countryCode)
+  const municipalityOptions = useMunicipalityOptions(filters.countryCode, {
+    departmentId: filters.departmentId,
+    projectId: filters.projectId,
+  })
 
   const activeCount = useMemo(
     () =>

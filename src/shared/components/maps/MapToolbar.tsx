@@ -1,5 +1,5 @@
 import type { ColombiaThematicOverlay, MapLayerMode } from '@shared/types/map.types'
-import { COLOMBIA_THEMATIC_LAYERS } from '@shared/constants/colombia-map.constants'
+import { COLOMBIA_PROJECTS_LAYER, COLOMBIA_THEMATIC_LAYERS } from '@shared/constants/colombia-map.constants'
 import { cn } from '@shared/utils/cn'
 
 interface MapToolbarProps {
@@ -7,6 +7,8 @@ interface MapToolbarProps {
   onLayerChange: (mode: MapLayerMode) => void
   colombiaOverlay: ColombiaThematicOverlay
   onColombiaOverlayChange: (overlay: ColombiaThematicOverlay) => void
+  showProjectsLayer: boolean
+  onShowProjectsLayerChange: (show: boolean) => void
   riskCount: number
   showColombiaLayers?: boolean
 }
@@ -38,6 +40,8 @@ export function MapToolbar({
   onLayerChange,
   colombiaOverlay,
   onColombiaOverlayChange,
+  showProjectsLayer,
+  onShowProjectsLayerChange,
   riskCount,
   showColombiaLayers = true,
 }: MapToolbarProps) {
@@ -99,6 +103,27 @@ export function MapToolbar({
               {option.label}
             </button>
           ))}
+        </div>
+      ) : null}
+
+      {showColombiaLayers ? (
+        <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 pt-2">
+          <span className="text-[0.6875rem] font-bold uppercase tracking-wide text-slate-400">
+            Capa adicional
+          </span>
+          <button
+            type="button"
+            title={COLOMBIA_PROJECTS_LAYER.description}
+            className={cn(
+              'min-h-7 cursor-pointer rounded-sm border px-2 text-[0.6875rem] font-semibold',
+              showProjectsLayer
+                ? 'border-blue-500 bg-blue-50 text-blue-900'
+                : 'border-slate-200 bg-white text-slate-600',
+            )}
+            onClick={() => onShowProjectsLayerChange(!showProjectsLayer)}
+          >
+            {COLOMBIA_PROJECTS_LAYER.shortLabel}
+          </button>
         </div>
       ) : null}
     </div>

@@ -1,47 +1,33 @@
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { GeoJSON, useMap } from 'react-leaflet'
 import type { Layer, PathOptions } from 'leaflet'
-import {
-  CRITICIDAD_FILL_COLORS,
-} from '@shared/constants/colombia-map.constants'
 import { useColombiaRiskGeoJson } from '@features/maps/hooks/useColombiaRiskGeoJson'
 import { useFilterStore } from '@shared/stores/filterStore'
+import {
+  COLOMBIA_HEAT_CONFIG,
+  COLOMBIA_HEAT_GRADIENTS,
+} from '@shared/constants/colombia-heat.data'
+import {
+  geoJsonToRiskHeatPoints,
+  type ColombiaRiskGeoCollection,
+  type ColombiaRiskGeoFeature,
+} from '@shared/utils/colombiaRiskGeo'
+import { HeatmapLayer } from './HeatmapLayer'
 
 interface ColombiaRiskGeoJsonLayerProps {
   visible: boolean
 }
 
-interface RiskFeatureProperties {
-  nombre: string
-  departamento: string
-  codDane: string
-  criticidad: string
-  criticidadLabel: string
+/** Polígonos casi invisibles: solo para clic y popup municipal */
+const INTERACTION_STYLE: PathOptions = {
+  fillColor: '#0f172a',
+  fillOpacity: 0.02,
+  color: 'transparent',
+  weight: 0,
+  opacity: 0,
 }
 
-interface RiskGeoFeature {
-  type: 'Feature'
-  properties: RiskFeatureProperties
-  geometry: GeoJSON.Geometry
-}
-
-interface RiskGeoCollection {
-  type: 'FeatureCollection'
-  features: RiskGeoFeature[]
-}
-
-function riskStyle(feature?: RiskGeoFeature): PathOptions {
-  const criticidad = feature?.properties?.criticidad ?? 'unknown'
-  return {
-    fillColor: CRITICIDAD_FILL_COLORS[criticidad] ?? '#94a3b8',
-    fillOpacity: 0.58,
-    color: '#475569',
-    weight: 0.65,
-    opacity: 0.75,
-  }
-}
-
-function bindRiskPopup(feature: RiskGeoFeature, layer: Layer) {
+function bindRiskPopup(feature: ColombiaRiskGeoFeature, layer: Layer) {
   const props = feature.properties
   if (!props) return
 
@@ -62,6 +48,13 @@ export function ColombiaRiskGeoJsonLayer({ visible }: ColombiaRiskGeoJsonLayerPr
   const departmentId = useFilterStore((state) => state.filters.departmentId)
   const municipalityId = useFilterStore((state) => state.filters.municipalityId)
 
+  const heatPoints = useMemo(() => {
+    if (!data) return []
+    return geoJsonToRiskHeatPoints(data as ColombiaRiskGeoCollection)
+  }, [data])
+
+  const heatConfig = COLOMBIA_HEAT_CONFIG['department-risk']
+
   useEffect(() => {
     if (!visible || !data) return
     const hasTerritorialZoom = Boolean(projectId || departmentId || municipalityId)
@@ -79,10 +72,22 @@ export function ColombiaRiskGeoJsonLayer({ visible }: ColombiaRiskGeoJsonLayerPr
   if (!visible || !data) return null
 
   return (
-    <GeoJSON
-      data={data as RiskGeoCollection}
-      style={riskStyle}
-      onEachFeature={bindRiskPopup}
-    />
+    <>
+      <HeatmapLayer
+        points={heatPoints}
+        visible
+        radius={heatConfig.radius}
+        blur={heatConfig.blur}
+        maxZoom={heatConfig.maxZoom}
+        minOpacity={heatConfig.minOpacity}
+        intensityScale={heatConfig.intensityScale}
+        gradient={COLOMBIA_HEAT_GRADIENTS['department-risk']}
+      />
+      <GeoJSON
+        data={data as ColombiaRiskGeoCollection}
+        style={() => INTERACTION_STYLE}
+        onEachFeature={bindRiskPopup}
+      />
+    </>
   )
 }

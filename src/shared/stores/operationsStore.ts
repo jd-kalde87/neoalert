@@ -357,8 +357,15 @@ export const useOperationsStore = create<OperationsState>()(
     }),
     {
       name: 'neoalert-operations',
-      version: 3,
+      version: 4,
       migrate: (persisted, version) => {
+        if (version < 4) {
+          return {
+            projects: SEED_PROJECTS,
+            departments: SEED_DEPARTMENTS,
+            routes: SEED_ROUTES,
+          }
+        }
         if (version < 3) {
           return {
             projects: SEED_PROJECTS,

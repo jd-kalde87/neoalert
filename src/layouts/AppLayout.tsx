@@ -8,6 +8,7 @@ import {
   LogOut,
   Map,
   Menu,
+  Newspaper,
   ScrollText,
   Shield,
   Upload,
@@ -19,6 +20,7 @@ import { APP_NAME } from '@shared/constants/app'
 import { ROUTES } from '@shared/constants/routes'
 import { GlobalFilterBar } from '@shared/components/filters/GlobalFilterBar'
 import { NotificationBell } from '@features/notifications'
+import { RegionalNewsAlert } from '@features/news'
 import { Button } from '@shared/components/ui/Button'
 import { useAutoSidebar } from '@shared/hooks/useAutoSidebar'
 import { useAuthStore } from '@shared/stores/authStore'
@@ -30,6 +32,7 @@ const NAV_ITEMS: { to: string; label: string; icon: LucideIcon }[] = [
   { to: ROUTES.maps, label: 'Mapa de riesgos', icon: Map },
   { to: ROUTES.operations, label: 'Proyectos y rutas', icon: Building2 },
   { to: ROUTES.incidents, label: 'Incidentes', icon: Shield },
+  { to: ROUTES.newsInterest, label: 'Noticias de Interés', icon: Newspaper },
   { to: ROUTES.attendance, label: 'Asistencia', icon: UserCheck },
   { to: ROUTES.notifications, label: 'Notificaciones', icon: Bell },
   { to: ROUTES.imports, label: 'Importaciones', icon: Upload },
@@ -136,6 +139,8 @@ export function AppLayout() {
           <Outlet />
         </main>
       </div>
+
+      <RegionalNewsAlert />
     </div>
   )
 }

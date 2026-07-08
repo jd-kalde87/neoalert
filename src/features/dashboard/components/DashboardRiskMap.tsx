@@ -7,7 +7,7 @@ import { Button } from '@shared/components/ui/Button'
 import { ROUTES } from '@shared/constants/routes'
 import { useMapRisks } from '@features/risks/hooks/useMapRisks'
 import { useMapStore } from '@features/maps/stores/mapStore'
-import { COLOMBIA_THEMATIC_LAYERS } from '@shared/constants/colombia-map.constants'
+import { COLOMBIA_PROJECTS_LAYER, COLOMBIA_THEMATIC_LAYERS } from '@shared/constants/colombia-map.constants'
 import { cn } from '@shared/utils/cn'
 
 interface DashboardRiskMapProps {
@@ -28,6 +28,8 @@ export function DashboardRiskMap({
   const selectRisk = useMapStore((state) => state.selectRisk)
   const colombiaOverlay = useMapStore((state) => state.colombiaOverlay)
   const setColombiaOverlay = useMapStore((state) => state.setColombiaOverlay)
+  const showProjectsLayer = useMapStore((state) => state.showProjectsLayer)
+  const setShowProjectsLayer = useMapStore((state) => state.setShowProjectsLayer)
 
   const risks = data?.risks ?? []
 
@@ -49,7 +51,7 @@ export function DashboardRiskMap({
       </div>
 
       <div className="relative min-h-[280px] flex-1">
-        <div className="absolute top-2 right-2 z-[600] flex flex-wrap gap-1">
+        <div className="absolute top-2 right-2 z-[600] flex max-w-[220px] flex-wrap justify-end gap-1">
           {(
             [
               ['none', 'Sin capa'] as const,
@@ -71,6 +73,18 @@ export function DashboardRiskMap({
               {label}
             </button>
           ))}
+          <button
+            type="button"
+            className={cn(
+              'rounded border px-2 py-0.5 text-[0.625rem] font-semibold shadow-sm',
+              showProjectsLayer
+                ? 'border-blue-600 bg-blue-700 text-white'
+                : 'border-slate-200 bg-white/95 text-slate-600',
+            )}
+            onClick={() => setShowProjectsLayer(!showProjectsLayer)}
+          >
+            {COLOMBIA_PROJECTS_LAYER.shortLabel}
+          </button>
         </div>
         <AsyncBoundary
           isLoading={isLoading}

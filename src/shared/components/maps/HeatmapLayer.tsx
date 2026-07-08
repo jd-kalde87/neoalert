@@ -10,8 +10,17 @@ interface HeatmapLayerProps {
   radius?: number
   blur?: number
   maxZoom?: number
+  minOpacity?: number
+  intensityScale?: number
   gradient?: Record<number, string>
 }
+
+const DEFAULT_INTENSITY_BY_SEVERITY = {
+  low: 0.35,
+  medium: 0.55,
+  high: 0.75,
+  critical: 1,
+} as const
 
 export function HeatmapLayer({
   points,
@@ -19,6 +28,8 @@ export function HeatmapLayer({
   radius = 28,
   blur = 22,
   maxZoom = 16,
+  minOpacity = 0.12,
+  intensityScale = 1,
   gradient = {
     0.2: '#3b82f6',
     0.45: '#22c55e',
@@ -39,19 +50,12 @@ export function HeatmapLayer({
       return
     }
 
-    const intensityBySeverity = {
-      low: 0.35,
-      medium: 0.55,
-      high: 0.75,
-      critical: 1,
-    } as const
-
     const heatPoints = points.map(
       (point) =>
         [
           point.latitude,
           point.longitude,
-          intensityBySeverity[point.severity],
+          DEFAULT_INTENSITY_BY_SEVERITY[point.severity] * intensityScale,
         ] as [number, number, number],
     )
 
@@ -59,6 +63,7 @@ export function HeatmapLayer({
       radius,
       blur,
       maxZoom,
+      minOpacity,
       gradient,
     })
 
@@ -69,7 +74,7 @@ export function HeatmapLayer({
       map.removeLayer(layer)
       layerRef.current = null
     }
-  }, [points, map, visible, radius, blur, maxZoom, gradient])
+  }, [points, map, visible, radius, blur, maxZoom, minOpacity, intensityScale, gradient])
 
   return null
 }

@@ -15,13 +15,16 @@ import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import './leaflet.css'
 import { OperationLayers } from './OperationLayers'
 import { ColombiaOverlayLegend } from './ColombiaOverlayLegend'
+import { ProjectsLayerLegend } from './ProjectsLayerLegend'
 import { ColombiaRiskGeoJsonLayer } from './ColombiaRiskGeoJsonLayer'
+import { ColombiaProjectsLayer } from './ColombiaProjectsLayer'
 import { useMapStore } from '@features/maps/stores/mapStore'
 import {
   COLOMBIA_HEAT_CONFIG,
   COLOMBIA_HEAT_GRADIENTS,
   getColombiaHeatPoints,
 } from '@shared/constants/colombia-heat.data'
+import { cn } from '@shared/utils/cn'
 import { MousePointerClick } from 'lucide-react'
 
 export type MapRegisterMode = 'risk' | 'incident'
@@ -82,6 +85,8 @@ export function OperativeMap({
   const viewport = useMapViewportTarget()
   const colombiaOverlay = useMapStore((state) => state.colombiaOverlay)
   const setColombiaOverlay = useMapStore((state) => state.setColombiaOverlay)
+  const showProjectsLayer = useMapStore((state) => state.showProjectsLayer)
+  const setShowProjectsLayer = useMapStore((state) => state.setShowProjectsLayer)
 
   useEffect(() => {
     configureLeafletDefaults()
@@ -121,6 +126,7 @@ export function OperativeMap({
         {enableViewportSync ? <MapViewportController target={viewport} /> : null}
         {showOperations ? <OperationLayers /> : null}
         {showColombiaRiskLayer ? <ColombiaRiskGeoJsonLayer visible /> : null}
+        {showProjectsLayer ? <ColombiaProjectsLayer visible /> : null}
         {showColombiaArmedHeat && colombiaHeatConfig && colombiaHeatGradient ? (
           <HeatmapLayer
             points={colombiaHeatPoints}
@@ -128,6 +134,8 @@ export function OperativeMap({
             radius={colombiaHeatConfig.radius}
             blur={colombiaHeatConfig.blur}
             maxZoom={colombiaHeatConfig.maxZoom}
+            minOpacity={colombiaHeatConfig.minOpacity}
+            intensityScale={colombiaHeatConfig.intensityScale}
             gradient={colombiaHeatGradient}
           />
         ) : null}
@@ -138,6 +146,8 @@ export function OperativeMap({
             radius={COLOMBIA_HEAT_CONFIG.risks.radius}
             blur={COLOMBIA_HEAT_CONFIG.risks.blur}
             maxZoom={COLOMBIA_HEAT_CONFIG.risks.maxZoom}
+            minOpacity={COLOMBIA_HEAT_CONFIG.risks.minOpacity}
+            intensityScale={COLOMBIA_HEAT_CONFIG.risks.intensityScale}
             gradient={COLOMBIA_HEAT_GRADIENTS.risks}
           />
         ) : null}
@@ -182,6 +192,8 @@ export function OperativeMap({
           onLayerChange={onLayerChange}
           colombiaOverlay={colombiaOverlay}
           onColombiaOverlayChange={setColombiaOverlay}
+          showProjectsLayer={showProjectsLayer}
+          onShowProjectsLayerChange={setShowProjectsLayer}
           riskCount={risks.length}
           showColombiaLayers={showColombiaLayers}
         />
@@ -190,7 +202,20 @@ export function OperativeMap({
       {colombiaOverlay !== 'none' ? (
         <ColombiaOverlayLegend
           overlay={colombiaOverlay}
-          className="absolute right-3 bottom-3 z-[500] max-[768px]:bottom-14"
+          className={cn(
+            'absolute right-3 z-[500]',
+            showProjectsLayer ? 'bottom-36 max-[768px]:bottom-44' : 'bottom-3 max-[768px]:bottom-14',
+          )}
+        />
+      ) : null}
+
+      {showProjectsLayer ? (
+        <ProjectsLayerLegend
+          projectCount={18}
+          className={cn(
+            'absolute right-3 z-[500]',
+            colombiaOverlay !== 'none' ? 'bottom-36 max-[768px]:bottom-44' : 'bottom-3 max-[768px]:bottom-14',
+          )}
         />
       ) : null}
     </div>

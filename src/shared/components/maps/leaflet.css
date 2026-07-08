@@ -60,3 +60,8 @@
 .leaflet-container {
   font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
+
+.neo-project-marker {
+  background: transparent;
+  border: none;
+}

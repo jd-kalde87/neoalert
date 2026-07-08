@@ -2,6 +2,17 @@ export type ColombiaThematicOverlay = 'none' | 'department-risk' | 'armed-groups
 
 export const COLOMBIA_RISK_GEOJSON_URL = '/maps/colombia/niveles-riesgo-2026.geojson'
 
+export const COLOMBIA_PROJECTS_AREAS_URL = '/maps/colombia/proyectos-wsp-2026-areas.geojson'
+export const COLOMBIA_PROJECTS_MUNICIPIOS_URL = '/maps/colombia/proyectos-wsp-2026-municipios.geojson'
+export const COLOMBIA_PROJECTS_CENTERS_URL = '/maps/colombia/proyectos-wsp-2026-centros.json'
+
+export const COLOMBIA_PROJECTS_LAYER = {
+  label: 'Proyectos WSP',
+  shortLabel: 'Proyectos',
+  description: 'Áreas de influencia y municipios asociados a proyectos WSP 2026.',
+  source: 'Municipios_Proyectos_2026 (shapefile)',
+} as const
+
 export const CRITICIDAD_FILL_COLORS: Record<string, string> = {
   bajo: '#22c55e',
   medio: '#eab308',
@@ -27,7 +38,7 @@ export const COLOMBIA_THEMATIC_LAYERS: Record<
     label: 'Nivel de riesgo departamental',
     shortLabel: 'Riesgo CO',
     description:
-      'Polígonos municipales por nivel de criticidad (Bajo, Medio, Alto, Extremo) — fuente shapefile 2026.',
+      'Mapa de calor municipal por criticidad (Bajo → Extremo) generado desde el shapefile 2026.',
     source: 'Niveles_de_riesgo_Colombia_2026 (APS-SIG / DANE)',
   },
   'armed-groups': {

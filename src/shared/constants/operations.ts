@@ -1,129 +1,75 @@
 import type { Department, OperationalRoute, Project } from '@shared/types/operations.types'
+import {
+  TERRITORY_DEPARTMENTS,
+  TERRITORY_MUNICIPALITIES,
+  TERRITORY_PROJECTS,
+  DEPARTMENT_PRIMARY_PROJECT,
+} from './territory-catalog.generated'
 
-export const SEED_PROJECTS: Project[] = [
-  {
-    id: 'project-ipiales',
-    name: 'Proyecto Ipiales',
-    description: 'Operación de monitoreo en corredor Nariño',
-    countryCode: 'CO',
-    latitude: 0.828,
-    longitude: -77.642,
-    isPrimary: true,
-    active: true,
-    updatedAt: '2026-06-01T10:00:00Z',
-  },
-  {
-    id: 'project-cali',
-    name: 'Proyecto Cali',
-    description: 'Operación en Valle del Cauca',
-    countryCode: 'CO',
-    latitude: 3.4516,
-    longitude: -76.532,
-    isPrimary: false,
-    active: true,
-    updatedAt: '2026-06-01T10:00:00Z',
-  },
-  {
-    id: 'project-manizales',
-    name: 'Proyecto Manizales',
-    description: 'Operación en Caldas',
-    countryCode: 'CO',
-    latitude: 5.0689,
-    longitude: -75.5174,
-    isPrimary: false,
-    active: true,
-    updatedAt: '2026-06-01T10:00:00Z',
-  },
-  {
-    id: 'project-medellin',
-    name: 'Proyecto Medellín',
-    description: 'Operación en Antioquia',
-    countryCode: 'CO',
-    latitude: 6.2442,
-    longitude: -75.5812,
-    isPrimary: false,
-    active: true,
-    updatedAt: '2026-06-01T10:00:00Z',
-  },
-]
+const UPDATED_AT = '2026-07-08T22:00:00Z'
 
-export const SEED_DEPARTMENTS: Department[] = [
-  {
-    id: 'dept-narino',
-    name: 'Nariño',
-    latitude: 0.828,
-    longitude: -77.642,
-    municipalityId: 'muni-ipiales',
-    projectId: 'project-ipiales',
-    countryCode: 'CO',
+function municipalityForDepartment(departmentKey: string) {
+  return TERRITORY_MUNICIPALITIES.find((item) => item.departmentKey === departmentKey)
+}
+
+export const SEED_PROJECTS: Project[] = TERRITORY_PROJECTS.map((project, index) => ({
+  id: project.id,
+  name: project.label,
+  description: `Proyecto WSP ${project.noProyect}`,
+  countryCode: project.countryCode,
+  latitude: project.latitude,
+  longitude: project.longitude,
+  isPrimary: index === 0,
+  active: true,
+  updatedAt: UPDATED_AT,
+}))
+
+export const SEED_DEPARTMENTS: Department[] = TERRITORY_DEPARTMENTS.map((department) => {
+  const municipality = municipalityForDepartment(department.departmentKey)
+  return {
+    id: department.id,
+    name: department.label,
+    municipalityId: municipality?.id ?? 'muni-bogota',
+    projectId:
+      DEPARTMENT_PRIMARY_PROJECT[department.departmentKey] ?? SEED_PROJECTS[0]?.id ?? 'project-1502',
+    countryCode: department.countryCode,
+    latitude: municipality?.latitude ?? 4.57,
+    longitude: municipality?.longitude ?? -75.5,
     active: true,
-    updatedAt: '2026-06-01T10:00:00Z',
-  },
-  {
-    id: 'dept-valle',
-    name: 'Valle del Cauca',
-    latitude: 3.4516,
-    longitude: -76.532,
-    municipalityId: 'muni-cali',
-    projectId: 'project-cali',
-    countryCode: 'CO',
-    active: true,
-    updatedAt: '2026-06-01T10:00:00Z',
-  },
-  {
-    id: 'dept-caldas',
-    name: 'Caldas',
-    latitude: 5.0689,
-    longitude: -75.5174,
-    municipalityId: 'muni-manizales',
-    projectId: 'project-manizales',
-    countryCode: 'CO',
-    active: true,
-    updatedAt: '2026-06-01T10:00:00Z',
-  },
-  {
-    id: 'dept-antioquia',
-    name: 'Antioquia',
-    latitude: 6.2442,
-    longitude: -75.5812,
-    municipalityId: 'muni-medellin',
-    projectId: 'project-medellin',
-    countryCode: 'CO',
-    active: true,
-    updatedAt: '2026-06-01T10:00:00Z',
-  },
-]
+    updatedAt: UPDATED_AT,
+  }
+})
 
 export const SEED_ROUTES: OperationalRoute[] = [
   {
-    id: 'route-ipiales',
-    name: 'Proyecto Ipiales → Nariño',
-    projectId: 'project-ipiales',
-    departmentId: 'dept-narino',
+    id: 'route-24718452-antioquia',
+    name: 'Verificación redes EPM → Antioquia',
+    projectId: 'project-24718452',
+    departmentId: 'dept-antioquia',
     color: '#2563eb',
     coordinates: [
-      [0.828, -77.642],
-      [0.83, -77.63],
-      [0.835, -77.62],
+      [6.2442, -75.5812],
+      [6.5, -75.4],
+      [7.0, -75.3],
     ],
-    estimatedMinutes: 35,
+    estimatedMinutes: 45,
     active: true,
-    updatedAt: '2026-06-01T10:00:00Z',
+    updatedAt: UPDATED_AT,
   },
   {
-    id: 'route-cali',
-    name: 'Proyecto Cali → Valle del Cauca',
-    projectId: 'project-cali',
-    departmentId: 'dept-valle',
-    color: '#059669',
+    id: 'route-1876-norte',
+    name: 'Corredor soberanía → Norte de Santander',
+    projectId: 'project-1876',
+    departmentId: 'dept-norte-de-santander',
+    color: '#ea580c',
     coordinates: [
-      [3.4516, -76.532],
-      [3.46, -76.52],
-      [3.47, -76.51],
+      [7.08821, -72.25091],
+      [7.5, -72.5],
+      [7.95, -72.85],
     ],
-    estimatedMinutes: 40,
+    estimatedMinutes: 50,
     active: true,
-    updatedAt: '2026-06-01T10:00:00Z',
+    updatedAt: UPDATED_AT,
   },
 ]
 

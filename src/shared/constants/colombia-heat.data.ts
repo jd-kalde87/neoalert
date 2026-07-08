@@ -98,11 +98,12 @@ export const COLOMBIA_ARMED_GROUPS_POINTS = toHeatmapPoints(ARMED_GROUPS_SEEDS)
 
 export const COLOMBIA_HEAT_GRADIENTS = {
   'department-risk': {
-    0.2: '#22c55e',
-    0.45: '#eab308',
-    0.65: '#f97316',
-    0.85: '#ea580c',
-    1: '#dc2626',
+    0.15: '#4ade80',
+    0.35: '#a3e635',
+    0.5: '#facc15',
+    0.68: '#fb923c',
+    0.82: '#f97316',
+    1: '#ef4444',
   },
   'armed-groups': {
     0.25: '#fbbf24',
@@ -121,9 +122,15 @@ export const COLOMBIA_HEAT_GRADIENTS = {
 } as const satisfies Record<string, Record<number, string>>
 
 export const COLOMBIA_HEAT_CONFIG = {
-  'department-risk': { radius: 42, blur: 28, maxZoom: 10 },
-  'armed-groups': { radius: 38, blur: 26, maxZoom: 11 },
-  risks: { radius: 28, blur: 22, maxZoom: 16 },
+  'department-risk': {
+    radius: 62,
+    blur: 48,
+    maxZoom: 12,
+    minOpacity: 0.24,
+    intensityScale: 0.9,
+  },
+  'armed-groups': { radius: 38, blur: 26, maxZoom: 11, minOpacity: 0.12, intensityScale: 1 },
+  risks: { radius: 28, blur: 22, maxZoom: 16, minOpacity: 0.12, intensityScale: 1 },
 } as const
 
 export function getColombiaHeatPoints(

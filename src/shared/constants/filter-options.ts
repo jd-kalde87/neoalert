@@ -1,4 +1,8 @@
 import { MUNICIPALITY_GEO } from './geo.constants'
+import {
+  TERRITORY_DEPARTMENTS,
+  TERRITORY_PROJECTS,
+} from './territory-catalog.generated'
 
 export interface FilterOption {
   value: string
@@ -16,19 +20,15 @@ export const MUNICIPALITY_OPTIONS: FilterOption[] = MUNICIPALITY_GEO.map((item) 
   label: item.label,
 }))
 
-export const DEPARTMENT_OPTIONS: FilterOption[] = [
-  { value: 'dept-narino', label: 'Nariño' },
-  { value: 'dept-valle', label: 'Valle del Cauca' },
-  { value: 'dept-caldas', label: 'Caldas' },
-  { value: 'dept-antioquia', label: 'Antioquia' },
-]
+export const DEPARTMENT_OPTIONS: FilterOption[] = TERRITORY_DEPARTMENTS.map((item) => ({
+  value: item.id,
+  label: item.label,
+}))
 
-export const PROJECT_OPTIONS: FilterOption[] = [
-  { value: 'project-ipiales', label: 'Proyecto Ipiales' },
-  { value: 'project-cali', label: 'Proyecto Cali' },
-  { value: 'project-manizales', label: 'Proyecto Manizales' },
-  { value: 'project-medellin', label: 'Proyecto Medellín' },
-]
+export const PROJECT_OPTIONS: FilterOption[] = TERRITORY_PROJECTS.map((item) => ({
+  value: item.id,
+  label: item.label,
+}))
 
 export const COUNTRY_OPTIONS: FilterOption[] = [
   { value: 'CO', label: 'Colombia' },

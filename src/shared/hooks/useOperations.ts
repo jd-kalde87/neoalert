@@ -1,6 +1,10 @@
 import { useMemo } from 'react'
 import { MUNICIPALITY_OPTIONS } from '@shared/constants/filter-options'
-import { MUNICIPALITY_GEO } from '@shared/constants/geo.constants'
+import {
+  getTerritoryDepartmentOptions,
+  getTerritoryMunicipalityOptions,
+  getTerritoryProjectOptions,
+} from '@shared/constants/territory-catalog'
 import { useOperationsStore } from '@shared/stores/operationsStore'
 
 export function useProjects() {
@@ -81,15 +85,7 @@ export function municipalityLabel(municipalityId: string) {
 }
 
 export function useProjectOptions(countryCode?: string) {
-  const projects = useOperationsStore((state) => state.projects)
-  return useMemo(
-    () =>
-      projects
-        .filter((project) => project.active)
-        .filter((project) => !countryCode || project.countryCode === countryCode)
-        .map((project) => ({ value: project.id, label: project.name })),
-    [projects, countryCode],
-  )
+  return useMemo(() => getTerritoryProjectOptions(countryCode), [countryCode])
 }
 
 export function useDepartmentSelectOptions(filters?: {
@@ -97,31 +93,24 @@ export function useDepartmentSelectOptions(filters?: {
   projectId?: string
   municipalityId?: string
 }) {
-  const departments = useOperationsStore((state) => state.departments)
   return useMemo(
-    () =>
-      departments
-        .filter((department) => department.active)
-        .filter(
-          (department) => !filters?.countryCode || department.countryCode === filters.countryCode,
-        )
-        .filter((department) => !filters?.projectId || department.projectId === filters.projectId)
-        .filter(
-          (department) =>
-            !filters?.municipalityId || department.municipalityId === filters.municipalityId,
-        )
-        .map((department) => ({ value: department.id, label: department.name })),
-    [departments, filters?.countryCode, filters?.projectId, filters?.municipalityId],
+    () => getTerritoryDepartmentOptions(filters),
+    [filters?.countryCode, filters?.projectId, filters?.municipalityId],
   )
 }
 
-export function useMunicipalityOptions(countryCode?: string) {
+export function useMunicipalityOptions(
+  countryCode?: string,
+  filters?: { departmentId?: string; projectId?: string },
+) {
   return useMemo(
     () =>
-      MUNICIPALITY_GEO.filter((item) => !countryCode || item.countryCode === countryCode).map(
-        (item) => ({ value: item.value, label: item.label }),
-      ),
-    [countryCode],
+      getTerritoryMunicipalityOptions({
+        countryCode,
+        departmentId: filters?.departmentId,
+        projectId: filters?.projectId,
+      }),
+    [countryCode, filters?.departmentId, filters?.projectId],
   )
 }
 

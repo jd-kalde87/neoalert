@@ -23,33 +23,12 @@ export interface MunicipalityGeo {
   longitude: number
 }
 
-export const MUNICIPALITY_GEO: MunicipalityGeo[] = [
-  {
-    value: 'muni-ipiales',
-    label: 'Ipiales',
-    countryCode: 'CO',
-    latitude: 0.828,
-    longitude: -77.642,
-  },
-  {
-    value: 'muni-cali',
-    label: 'Cali',
-    countryCode: 'CO',
-    latitude: 3.4516,
-    longitude: -76.532,
-  },
-  {
-    value: 'muni-manizales',
-    label: 'Manizales',
-    countryCode: 'CO',
-    latitude: 5.0689,
-    longitude: -75.5174,
-  },
-  {
-    value: 'muni-medellin',
-    label: 'Medellín',
-    countryCode: 'CO',
-    latitude: 6.2442,
-    longitude: -75.5812,
-  },
-]
+import { TERRITORY_MUNICIPALITIES } from './territory-catalog.generated'
+
+export const MUNICIPALITY_GEO: MunicipalityGeo[] = TERRITORY_MUNICIPALITIES.map((item) => ({
+  value: item.id,
+  label: item.label,
+  countryCode: item.countryCode,
+  latitude: item.latitude,
+  longitude: item.longitude,
+}))

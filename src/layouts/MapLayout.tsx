@@ -7,8 +7,10 @@ import { MapRiskModal } from '@features/risks/components/MapRiskModal'
 import { useMapRisks } from '@features/risks/hooks/useMapRisks'
 import { MapLegend } from '@features/maps/components/MapLegend'
 import { ColombiaOverlayLegend } from '@shared/components/maps/ColombiaOverlayLegend'
+import { ProjectsLayerLegend } from '@shared/components/maps/ProjectsLayerLegend'
 import { MapViewNav } from '@features/maps/components/MapViewNav'
 import { useMapStore } from '@features/maps/stores/mapStore'
+import { RegionalNewsPanel } from '@features/news/components/RegionalNewsPanel'
 import { cn } from '@shared/utils/cn'
 
 export function MapLayout() {
@@ -19,6 +21,7 @@ export function MapLayout() {
   const setLayerMode = useMapStore((state) => state.setLayerMode)
   const selectRisk = useMapStore((state) => state.selectRisk)
   const colombiaOverlay = useMapStore((state) => state.colombiaOverlay)
+  const showProjectsLayer = useMapStore((state) => state.showProjectsLayer)
 
   const [modalOpen, setModalOpen] = useState(false)
   const [draftLocation, setDraftLocation] = useState<{ lat: number; lng: number } | null>(null)
@@ -80,15 +83,18 @@ export function MapLayout() {
             <MapLegend compact />
             {colombiaOverlay !== 'none' ? (
               <ColombiaOverlayLegend overlay={colombiaOverlay} className="pointer-events-none" />
+            ) : showProjectsLayer ? (
+              <ProjectsLayerLegend className="pointer-events-none" />
             ) : (
               <p className="text-[0.6875rem] leading-relaxed text-slate-500">
-                Active <strong>Riesgo CO</strong> para ver polígonos municipales del shapefile
-                oficial 2026. Clic en un municipio para ver su nivel de criticidad.
+                Active <strong>Riesgo CO</strong> para el mapa de calor municipal, o{' '}
+                <strong>Proyectos</strong> para ver la cobertura WSP 2026.
               </p>
             )}
           </div>
 
-          <div className="neo-scroll flex-1 overflow-y-auto p-4">
+          <div className="neo-scroll flex-1 overflow-y-auto p-4 space-y-4">
+            <RegionalNewsPanel />
             <Outlet
               context={{
                 risks,

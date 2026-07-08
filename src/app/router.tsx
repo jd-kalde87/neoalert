@@ -20,6 +20,7 @@ import {
   IncidentsListPage,
 } from '@features/incidents'
 import { NotificationsPage } from '@features/notifications'
+import { NewsInterestPage } from '@features/news'
 import { FileImportPage, ImportDetailPage, ImportUploadPage } from '@features/file-import'
 import {
   ImportTemplateCreatePage,
@@ -74,6 +75,7 @@ export const appRouter = createBrowserRouter([
       { path: ROUTES.incidentNew, element: <IncidentCreatePage /> },
       { path: ROUTES.incidentDetail, element: <IncidentDetailPage /> },
       { path: ROUTES.notifications, element: <NotificationsPage /> },
+      { path: ROUTES.newsInterest, element: <NewsInterestPage /> },
       { path: ROUTES.imports, element: <FileImportPage /> },
       { path: ROUTES.importUpload, element: <ImportUploadPage /> },
       { path: ROUTES.importDetail, element: <ImportDetailPage /> },
