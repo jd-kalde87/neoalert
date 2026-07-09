@@ -40,6 +40,12 @@ export function RiskClusterLayer({ risks, selectedRiskId, onSelectRisk }: RiskCl
       })
 
       marker.bindPopup(buildPopup(risk))
+      marker.bindTooltip(risk.title, {
+        direction: 'top',
+        offset: [0, -10],
+        opacity: 0.95,
+        className: 'neo-map-tooltip',
+      })
       marker.on('click', (event) => {
         L.DomEvent.stopPropagation(event)
         onSelectRisk(risk.id)

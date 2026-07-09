@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import { MapContainer, Marker, useMapEvents } from 'react-leaflet'
 import type { MapLayerMode, MapRisk } from '@shared/types/map.types'
 import { WORLD_MAP_VIEW } from '@shared/constants/geo.constants'
@@ -17,13 +17,10 @@ import { OperationLayers } from './OperationLayers'
 import { ColombiaOverlayLegend } from './ColombiaOverlayLegend'
 import { ProjectsLayerLegend } from './ProjectsLayerLegend'
 import { ColombiaRiskGeoJsonLayer } from './ColombiaRiskGeoJsonLayer'
+import { ColombiaArmedGroupsLayer } from './ColombiaArmedGroupsLayer'
 import { ColombiaProjectsLayer } from './ColombiaProjectsLayer'
 import { useMapStore } from '@features/maps/stores/mapStore'
-import {
-  COLOMBIA_HEAT_CONFIG,
-  COLOMBIA_HEAT_GRADIENTS,
-  getColombiaHeatPoints,
-} from '@shared/constants/colombia-heat.data'
+import { COLOMBIA_HEAT_CONFIG, COLOMBIA_HEAT_GRADIENTS } from '@shared/constants/colombia-heat.data'
 import { cn } from '@shared/utils/cn'
 import { MousePointerClick } from 'lucide-react'
 
@@ -97,22 +94,14 @@ export function OperativeMap({
 
   const showHeatmap = layerMode === 'heatmap'
   const showMarkers = layerMode !== 'heatmap'
-  const registerEnabled = Boolean(onMapRegister) && !showHeatmap
+  const registerEnabled = Boolean(onMapRegister)
   const heatmapPoints = risks.map((risk) => ({
     latitude: risk.latitude,
     longitude: risk.longitude,
     severity: risk.severity,
   }))
-  const colombiaHeatPoints = useMemo(
-    () => (colombiaOverlay === 'armed-groups' ? getColombiaHeatPoints(colombiaOverlay) : []),
-    [colombiaOverlay],
-  )
-  const colombiaHeatConfig =
-    colombiaOverlay === 'armed-groups' ? COLOMBIA_HEAT_CONFIG['armed-groups'] : null
-  const colombiaHeatGradient =
-    colombiaOverlay === 'armed-groups' ? COLOMBIA_HEAT_GRADIENTS['armed-groups'] : null
   const showColombiaRiskLayer = colombiaOverlay === 'department-risk'
-  const showColombiaArmedHeat = colombiaOverlay === 'armed-groups'
+  const showColombiaArmedGroups = colombiaOverlay === 'armed-groups'
 
   return (
     <div className="relative h-full min-h-[320px] w-full">
@@ -125,20 +114,21 @@ export function OperativeMap({
         <DynamicTileLayer layerMode={layerMode === 'heatmap' ? 'standard' : layerMode} />
         {enableViewportSync ? <MapViewportController target={viewport} /> : null}
         {showOperations ? <OperationLayers /> : null}
-        {showColombiaRiskLayer ? <ColombiaRiskGeoJsonLayer visible /> : null}
-        {showProjectsLayer ? <ColombiaProjectsLayer visible /> : null}
-        {showColombiaArmedHeat && colombiaHeatConfig && colombiaHeatGradient ? (
-          <HeatmapLayer
-            points={colombiaHeatPoints}
+        {showColombiaRiskLayer ? (
+          <ColombiaRiskGeoJsonLayer
             visible
-            radius={colombiaHeatConfig.radius}
-            blur={colombiaHeatConfig.blur}
-            maxZoom={colombiaHeatConfig.maxZoom}
-            minOpacity={colombiaHeatConfig.minOpacity}
-            intensityScale={colombiaHeatConfig.intensityScale}
-            gradient={colombiaHeatGradient}
+            registerEnabled={registerEnabled}
+            onMapRegister={onMapRegister}
           />
         ) : null}
+        {showProjectsLayer ? (
+          <ColombiaProjectsLayer
+            visible
+            registerEnabled={registerEnabled}
+            onMapRegister={onMapRegister}
+          />
+        ) : null}
+        {showColombiaArmedGroups ? <ColombiaArmedGroupsLayer visible /> : null}
         {showHeatmap ? (
           <HeatmapLayer
             points={heatmapPoints}

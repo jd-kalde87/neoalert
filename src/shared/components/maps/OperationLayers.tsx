@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { MapContainer, Marker, Polyline, Popup, TileLayer, useMapEvents } from 'react-leaflet'
+import { MapContainer, Marker, Polyline, Popup, TileLayer, Tooltip, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import { useActiveOperationalData } from '@shared/hooks/useOperations'
 import { configureLeafletDefaults, createRiskZoneIcon } from './leaflet-setup'
@@ -47,6 +47,9 @@ export function OperationLayers() {
           position={[project.latitude, project.longitude]}
           icon={projectIcon()}
         >
+          <Tooltip direction="top" offset={[0, -14]} opacity={0.95} className="neo-map-tooltip">
+            {project.name}
+          </Tooltip>
           <Popup>
             <strong>{project.name}</strong>
             {project.description ? <p>{project.description}</p> : null}
@@ -60,6 +63,9 @@ export function OperationLayers() {
           position={[department.latitude, department.longitude]}
           icon={departmentIcon()}
         >
+          <Tooltip direction="top" offset={[0, -12]} opacity={0.95} className="neo-map-tooltip">
+            {department.name}
+          </Tooltip>
           <Popup>
             <strong>{department.name}</strong>
             <p>Departamento operativo</p>

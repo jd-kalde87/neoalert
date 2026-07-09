@@ -1,35 +1,60 @@
 import { useEffect, useMemo } from 'react'
 import { GeoJSON, useMap } from 'react-leaflet'
+import L from 'leaflet'
 import type { Layer, PathOptions } from 'leaflet'
 import { useColombiaRiskGeoJson } from '@features/maps/hooks/useColombiaRiskGeoJson'
 import { useFilterStore } from '@shared/stores/filterStore'
+import { CRITICIDAD_FILL_COLORS } from '@shared/constants/colombia-map.constants'
 import {
-  COLOMBIA_HEAT_CONFIG,
-  COLOMBIA_HEAT_GRADIENTS,
-} from '@shared/constants/colombia-heat.data'
-import {
-  geoJsonToRiskHeatPoints,
   type ColombiaRiskGeoCollection,
   type ColombiaRiskGeoFeature,
 } from '@shared/utils/colombiaRiskGeo'
-import { HeatmapLayer } from './HeatmapLayer'
 
 interface ColombiaRiskGeoJsonLayerProps {
   visible: boolean
+  registerEnabled?: boolean
+  onMapRegister?: (lat: number, lng: number) => void
 }
 
-/** Polígonos casi invisibles: solo para clic y popup municipal */
-const INTERACTION_STYLE: PathOptions = {
-  fillColor: '#0f172a',
-  fillOpacity: 0.02,
-  color: 'transparent',
-  weight: 0,
-  opacity: 0,
+function riskPolygonStyle(feature?: ColombiaRiskGeoFeature): PathOptions {
+  const criticidad = feature?.properties?.criticidad ?? 'unknown'
+  const fillColor = CRITICIDAD_FILL_COLORS[criticidad] ?? CRITICIDAD_FILL_COLORS.unknown
+
+  return {
+    fillColor,
+    fillOpacity: 0.24,
+    color: fillColor,
+    weight: 0.75,
+    opacity: 0.5,
+  }
 }
 
-function bindRiskPopup(feature: ColombiaRiskGeoFeature, layer: Layer) {
+function bindRiskLayer(
+  feature: ColombiaRiskGeoFeature,
+  layer: Layer,
+  registerEnabled: boolean,
+  onMapRegister?: (lat: number, lng: number) => void,
+) {
   const props = feature.properties
   if (!props) return
+
+  layer.bindTooltip(
+    `<strong>${props.nombre}</strong><br/><span>${props.criticidadLabel || props.criticidad}</span>`,
+    {
+      direction: 'top',
+      sticky: true,
+      className: 'neo-map-tooltip',
+      opacity: 0.95,
+    },
+  )
+
+  if (registerEnabled && onMapRegister) {
+    layer.on('click', (event) => {
+      L.DomEvent.stopPropagation(event)
+      onMapRegister(event.latlng.lat, event.latlng.lng)
+    })
+    return
+  }
 
   layer.bindPopup(
     `<div class="neo-map-popup">
@@ -41,19 +66,23 @@ function bindRiskPopup(feature: ColombiaRiskGeoFeature, layer: Layer) {
   )
 }
 
-export function ColombiaRiskGeoJsonLayer({ visible }: ColombiaRiskGeoJsonLayerProps) {
+export function ColombiaRiskGeoJsonLayer({
+  visible,
+  registerEnabled = false,
+  onMapRegister,
+}: ColombiaRiskGeoJsonLayerProps) {
   const map = useMap()
   const { data } = useColombiaRiskGeoJson(visible)
   const projectId = useFilterStore((state) => state.filters.projectId)
   const departmentId = useFilterStore((state) => state.filters.departmentId)
   const municipalityId = useFilterStore((state) => state.filters.municipalityId)
 
-  const heatPoints = useMemo(() => {
-    if (!data) return []
-    return geoJsonToRiskHeatPoints(data as ColombiaRiskGeoCollection)
-  }, [data])
-
-  const heatConfig = COLOMBIA_HEAT_CONFIG['department-risk']
+  const onEachFeature = useMemo(
+    () => (feature: ColombiaRiskGeoFeature, layer: Layer) => {
+      bindRiskLayer(feature, layer, registerEnabled, onMapRegister)
+    },
+    [registerEnabled, onMapRegister],
+  )
 
   useEffect(() => {
     if (!visible || !data) return
@@ -72,22 +101,10 @@ export function ColombiaRiskGeoJsonLayer({ visible }: ColombiaRiskGeoJsonLayerPr
   if (!visible || !data) return null
 
   return (
-    <>
-      <HeatmapLayer
-        points={heatPoints}
-        visible
-        radius={heatConfig.radius}
-        blur={heatConfig.blur}
-        maxZoom={heatConfig.maxZoom}
-        minOpacity={heatConfig.minOpacity}
-        intensityScale={heatConfig.intensityScale}
-        gradient={COLOMBIA_HEAT_GRADIENTS['department-risk']}
-      />
-      <GeoJSON
-        data={data as ColombiaRiskGeoCollection}
-        style={() => INTERACTION_STYLE}
-        onEachFeature={bindRiskPopup}
-      />
-    </>
+    <GeoJSON
+      data={data as ColombiaRiskGeoCollection}
+      style={riskPolygonStyle}
+      onEachFeature={onEachFeature}
+    />
   )
 }

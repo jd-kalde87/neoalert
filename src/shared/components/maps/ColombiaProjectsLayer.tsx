@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { GeoJSON, Marker, Popup, useMap } from 'react-leaflet'
+import { GeoJSON, Marker, Popup, Tooltip, useMap } from 'react-leaflet'
 import type { Layer, PathOptions } from 'leaflet'
 import L from 'leaflet'
 import { useColombiaProjectsData } from '@features/maps/hooks/useColombiaProjectsData'
@@ -8,6 +8,8 @@ import { createProjectMarkerIcon } from './leaflet-setup'
 
 interface ColombiaProjectsLayerProps {
   visible: boolean
+  registerEnabled?: boolean
+  onMapRegister?: (lat: number, lng: number) => void
 }
 
 interface ProjectAreaProperties {
@@ -47,15 +49,36 @@ function areaStyle(feature?: ProjectGeoFeature<ProjectAreaProperties>): PathOpti
   const color = feature?.properties?.color ?? '#2563eb'
   return {
     fillColor: color,
-    fillOpacity: 0.32,
+    fillOpacity: 0.22,
     color,
-    weight: 2.5,
-    opacity: 0.95,
+    weight: 2,
+    opacity: 0.7,
   }
 }
 
-function bindAreaPopup(feature: ProjectGeoFeature<ProjectAreaProperties>, layer: Layer) {
+function bindAreaLayer(
+  feature: ProjectGeoFeature<ProjectAreaProperties>,
+  layer: Layer,
+  registerEnabled: boolean,
+  onMapRegister?: (lat: number, lng: number) => void,
+) {
   const props = feature.properties
+
+  layer.bindTooltip(`<strong>${props.nombre}</strong>`, {
+    direction: 'top',
+    sticky: true,
+    className: 'neo-map-tooltip',
+    opacity: 0.95,
+  })
+
+  if (registerEnabled && onMapRegister) {
+    layer.on('click', (event) => {
+      L.DomEvent.stopPropagation(event)
+      onMapRegister(event.latlng.lat, event.latlng.lng)
+    })
+    return
+  }
+
   layer.bindPopup(
     `<div class="neo-map-popup">
       <strong>${props.nombre}</strong>
@@ -67,11 +90,29 @@ function bindAreaPopup(feature: ProjectGeoFeature<ProjectAreaProperties>, layer:
   )
 }
 
-function bindMunicipioPopup(
+function bindMunicipioLayer(
   feature: ProjectGeoFeature<ProjectMunicipioProperties>,
   layer: Layer,
+  registerEnabled: boolean,
+  onMapRegister?: (lat: number, lng: number) => void,
 ) {
   const props = feature.properties
+
+  layer.bindTooltip(`<strong>${props.municipio}</strong><br/><span>${props.nombre}</span>`, {
+    direction: 'top',
+    sticky: true,
+    className: 'neo-map-tooltip',
+    opacity: 0.95,
+  })
+
+  if (registerEnabled && onMapRegister) {
+    layer.on('click', (event) => {
+      L.DomEvent.stopPropagation(event)
+      onMapRegister(event.latlng.lat, event.latlng.lng)
+    })
+    return
+  }
+
   layer.bindPopup(
     `<div class="neo-map-popup">
       <strong>${props.municipio}</strong>
@@ -82,7 +123,11 @@ function bindMunicipioPopup(
   )
 }
 
-export function ColombiaProjectsLayer({ visible }: ColombiaProjectsLayerProps) {
+export function ColombiaProjectsLayer({
+  visible,
+  registerEnabled = false,
+  onMapRegister,
+}: ColombiaProjectsLayerProps) {
   const map = useMap()
   const { data, isLoading, isError } = useColombiaProjectsData(visible)
   const projectId = useFilterStore((state) => state.filters.projectId)
@@ -112,7 +157,14 @@ export function ColombiaProjectsLayer({ visible }: ColombiaProjectsLayerProps) {
       <GeoJSON
         data={data.areas as ProjectGeoCollection<ProjectAreaProperties>}
         style={areaStyle}
-        onEachFeature={bindAreaPopup}
+        onEachFeature={(feature, layer) =>
+          bindAreaLayer(
+            feature as ProjectGeoFeature<ProjectAreaProperties>,
+            layer,
+            registerEnabled,
+            onMapRegister,
+          )
+        }
       />
       <GeoJSON
         data={data.municipios as ProjectGeoCollection<ProjectMunicipioProperties>}
@@ -128,7 +180,14 @@ export function ColombiaProjectsLayer({ visible }: ColombiaProjectsLayerProps) {
             opacity: 1,
           })
         }}
-        onEachFeature={bindMunicipioPopup}
+        onEachFeature={(feature, layer) =>
+          bindMunicipioLayer(
+            feature as ProjectGeoFeature<ProjectMunicipioProperties>,
+            layer,
+            registerEnabled,
+            onMapRegister,
+          )
+        }
       />
       {data.centers.map((project) => (
         <Marker
@@ -136,19 +195,34 @@ export function ColombiaProjectsLayer({ visible }: ColombiaProjectsLayerProps) {
           position={[project.latitude, project.longitude]}
           icon={createProjectMarkerIcon(project.color)}
           zIndexOffset={1200}
+          eventHandlers={
+            registerEnabled && onMapRegister
+              ? {
+                  click: (event) => {
+                    L.DomEvent.stopPropagation(event)
+                    onMapRegister(event.latlng.lat, event.latlng.lng)
+                  },
+                }
+              : undefined
+          }
         >
-          <Popup>
-            <div className="neo-map-popup">
-              <strong>{project.nombre}</strong>
-              <p>No. proyecto: {project.noProyect}</p>
-              <p>
-                {project.empresa}
-                {project.segmento ? ` · ${project.segmento}` : ''}
-              </p>
-              <p>{project.municipios} municipio(s) en cobertura</p>
-              {project.gerente ? <small>Gerente: {project.gerente}</small> : null}
-            </div>
-          </Popup>
+          <Tooltip direction="top" offset={[0, -14]} opacity={0.95} className="neo-map-tooltip">
+            <strong>{project.nombre}</strong>
+          </Tooltip>
+          {!registerEnabled ? (
+            <Popup>
+              <div className="neo-map-popup">
+                <strong>{project.nombre}</strong>
+                <p>No. proyecto: {project.noProyect}</p>
+                <p>
+                  {project.empresa}
+                  {project.segmento ? ` · ${project.segmento}` : ''}
+                </p>
+                <p>{project.municipios} municipio(s) en cobertura</p>
+                {project.gerente ? <small>Gerente: {project.gerente}</small> : null}
+              </div>
+            </Popup>
+          ) : null}
         </Marker>
       ))}
     </>

@@ -1,0 +1,140 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "grupo": "Frente 57",
+        "region": "Norte del Chocó / Frontera Panamá",
+        "color": "#002060"
+      },
+      "geometry": { "type": "Point", "coordinates": [-77.2, 7.5] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "grupo": "Autodefensas Conquistadores de la Sierra Nevada",
+        "region": "Magdalena / La Guajira",
+        "color": "#000000"
+      },
+      "geometry": { "type": "Point", "coordinates": [-73.9, 10.9] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "grupo": "Clan del Golfo",
+        "region": "Urabá Antioqueño y Chocó",
+        "color": "#548235"
+      },
+      "geometry": { "type": "Point", "coordinates": [-76.5, 8.0] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "grupo": "Clan del Golfo",
+        "region": "Córdoba / Sucre / Bolívar",
+        "color": "#548235"
+      },
+      "geometry": { "type": "Point", "coordinates": [-75.5, 8.8] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "grupo": "Ejército de Liberación Nacional ELN",
+        "region": "Arauca",
+        "color": "#C00000"
+      },
+      "geometry": { "type": "Point", "coordinates": [-71.2, 6.8] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "grupo": "Ejército de Liberación Nacional ELN",
+        "region": "Catatumbo (Norte de Santander)",
+        "color": "#C00000"
+      },
+      "geometry": { "type": "Point", "coordinates": [-73.1, 8.5] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "grupo": "Ejército de Liberación Nacional ELN",
+        "region": "Sur del Chocó / Valle",
+        "color": "#C00000"
+      },
+      "geometry": { "type": "Point", "coordinates": [-76.8, 5.0] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "grupo": "Segunda Marquetalia",
+        "region": "Guainía / Vichada",
+        "color": "#FF66FF"
+      },
+      "geometry": { "type": "Point", "coordinates": [-68.5, 3.2] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "grupo": "Segunda Marquetalia",
+        "region": "Costa Pacífica (Nariño)",
+        "color": "#FF66FF"
+      },
+      "geometry": { "type": "Point", "coordinates": [-78.5, 1.8] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "grupo": "Estado Mayor Central",
+        "region": "Guaviare / Meta",
+        "color": "#3399FF"
+      },
+      "geometry": { "type": "Point", "coordinates": [-72.2, 2.3] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "grupo": "Estado Mayor Central",
+        "region": "Cauca / Valle del Cauca",
+        "color": "#3399FF"
+      },
+      "geometry": { "type": "Point", "coordinates": [-76.6, 2.8] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "grupo": "Estado Mayor de Bloques y Frentes",
+        "region": "Caquetá / Sur del Meta",
+        "color": "#FFC000"
+      },
+      "geometry": { "type": "Point", "coordinates": [-74.2, 1.5] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "grupo": "Estado Mayor de Bloques y Frentes",
+        "region": "Huila / Tolima",
+        "color": "#FFC000"
+      },
+      "geometry": { "type": "Point", "coordinates": [-75.5, 3.2] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "grupo": "Coordinadora Nacional Ejército Bolivariano",
+        "region": "Putumayo / Frontera Sur",
+        "color": "#9933CC"
+      },
+      "geometry": { "type": "Point", "coordinates": [-76.2, 0.4] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "grupo": "Frente Comuneros del Sur",
+        "region": "Nariño (Andino)",
+        "color": "#FF6600"
+      },
+      "geometry": { "type": "Point", "coordinates": [-77.6, 1.4] }
+    }
+  ]
+}

@@ -70,6 +70,11 @@ export function HeatmapLayer({
     layer.addTo(map)
     layerRef.current = layer
 
+    const canvas = (layer as unknown as { _canvas?: HTMLCanvasElement })._canvas
+    if (canvas) {
+      canvas.style.pointerEvents = 'none'
+    }
+
     return () => {
       map.removeLayer(layer)
       layerRef.current = null
