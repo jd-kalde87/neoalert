@@ -1,21 +1,15 @@
 import {
-  ARMED_GROUPS_LEGEND,
   COLOMBIA_THEMATIC_LAYERS,
   DEPARTMENT_RISK_LEGEND,
-  type ColombiaThematicOverlay,
 } from '@shared/constants/colombia-map.constants'
 import { cn } from '@shared/utils/cn'
 
 interface ColombiaOverlayLegendProps {
-  overlay: ColombiaThematicOverlay
   className?: string
 }
 
-export function ColombiaOverlayLegend({ overlay, className }: ColombiaOverlayLegendProps) {
-  if (overlay === 'none') return null
-
-  const config = COLOMBIA_THEMATIC_LAYERS[overlay]
-  const items = overlay === 'department-risk' ? DEPARTMENT_RISK_LEGEND : ARMED_GROUPS_LEGEND
+export function ColombiaOverlayLegend({ className }: ColombiaOverlayLegendProps) {
+  const config = COLOMBIA_THEMATIC_LAYERS['department-risk']
 
   return (
     <div
@@ -28,7 +22,7 @@ export function ColombiaOverlayLegend({ overlay, className }: ColombiaOverlayLeg
       <p className="mb-1 font-bold text-slate-900">{config.label}</p>
       <p className="mb-2 leading-snug text-slate-500">{config.description}</p>
       <ul className="m-0 grid list-none gap-1 p-0">
-        {items.map((item) => (
+        {DEPARTMENT_RISK_LEGEND.map((item) => (
           <li key={item.label} className="flex items-center gap-2">
             <span
               className="inline-block size-3 shrink-0 rounded-sm border border-slate-300/60"

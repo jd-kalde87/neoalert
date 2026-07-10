@@ -17,7 +17,6 @@ import { OperationLayers } from './OperationLayers'
 import { ColombiaOverlayLegend } from './ColombiaOverlayLegend'
 import { ProjectsLayerLegend } from './ProjectsLayerLegend'
 import { ColombiaRiskGeoJsonLayer } from './ColombiaRiskGeoJsonLayer'
-import { ColombiaArmedGroupsLayer } from './ColombiaArmedGroupsLayer'
 import { ColombiaProjectsLayer } from './ColombiaProjectsLayer'
 import { useMapStore } from '@features/maps/stores/mapStore'
 import { COLOMBIA_HEAT_CONFIG, COLOMBIA_HEAT_GRADIENTS } from '@shared/constants/colombia-heat.data'
@@ -80,10 +79,10 @@ export function OperativeMap({
   showColombiaLayers = true,
 }: OperativeMapProps) {
   const viewport = useMapViewportTarget()
-  const colombiaOverlay = useMapStore((state) => state.colombiaOverlay)
-  const setColombiaOverlay = useMapStore((state) => state.setColombiaOverlay)
+  const showRiskLayer = useMapStore((state) => state.showRiskLayer)
+  const toggleRiskLayer = useMapStore((state) => state.toggleRiskLayer)
   const showProjectsLayer = useMapStore((state) => state.showProjectsLayer)
-  const setShowProjectsLayer = useMapStore((state) => state.setShowProjectsLayer)
+  const toggleProjectsLayer = useMapStore((state) => state.toggleProjectsLayer)
 
   useEffect(() => {
     configureLeafletDefaults()
@@ -100,8 +99,7 @@ export function OperativeMap({
     longitude: risk.longitude,
     severity: risk.severity,
   }))
-  const showColombiaRiskLayer = colombiaOverlay === 'department-risk'
-  const showColombiaArmedGroups = colombiaOverlay === 'armed-groups'
+  const showColombiaRiskLayer = showRiskLayer
 
   return (
     <div className="relative h-full min-h-[320px] w-full">
@@ -121,14 +119,6 @@ export function OperativeMap({
             onMapRegister={onMapRegister}
           />
         ) : null}
-        {showProjectsLayer ? (
-          <ColombiaProjectsLayer
-            visible
-            registerEnabled={registerEnabled}
-            onMapRegister={onMapRegister}
-          />
-        ) : null}
-        {showColombiaArmedGroups ? <ColombiaArmedGroupsLayer visible /> : null}
         {showHeatmap ? (
           <HeatmapLayer
             points={heatmapPoints}
@@ -146,6 +136,13 @@ export function OperativeMap({
             risks={risks}
             selectedRiskId={selectedRiskId}
             onSelectRisk={onSelectRisk}
+          />
+        ) : null}
+        {showProjectsLayer ? (
+          <ColombiaProjectsLayer
+            visible
+            registerEnabled={registerEnabled}
+            onMapRegister={onMapRegister}
           />
         ) : null}
         {onMapRegister ? (
@@ -178,20 +175,19 @@ export function OperativeMap({
 
       {!compact ? (
         <MapToolbar
-          layerMode={layerMode}
+          layerMode={layerMode === 'heatmap' ? 'standard' : layerMode}
           onLayerChange={onLayerChange}
-          colombiaOverlay={colombiaOverlay}
-          onColombiaOverlayChange={setColombiaOverlay}
+          showRiskLayer={showRiskLayer}
+          onToggleRiskLayer={toggleRiskLayer}
           showProjectsLayer={showProjectsLayer}
-          onShowProjectsLayerChange={setShowProjectsLayer}
+          onToggleProjectsLayer={toggleProjectsLayer}
           riskCount={risks.length}
           showColombiaLayers={showColombiaLayers}
         />
       ) : null}
 
-      {colombiaOverlay !== 'none' ? (
+      {showRiskLayer ? (
         <ColombiaOverlayLegend
-          overlay={colombiaOverlay}
           className={cn(
             'absolute right-3 z-[500]',
             showProjectsLayer ? 'bottom-36 max-[768px]:bottom-44' : 'bottom-3 max-[768px]:bottom-14',
@@ -204,7 +200,7 @@ export function OperativeMap({
           projectCount={18}
           className={cn(
             'absolute right-3 z-[500]',
-            colombiaOverlay !== 'none' ? 'bottom-36 max-[768px]:bottom-44' : 'bottom-3 max-[768px]:bottom-14',
+            showRiskLayer ? 'bottom-36 max-[768px]:bottom-44' : 'bottom-3 max-[768px]:bottom-14',
           )}
         />
       ) : null}

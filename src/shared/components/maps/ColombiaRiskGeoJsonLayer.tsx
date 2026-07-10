@@ -22,10 +22,10 @@ function riskPolygonStyle(feature?: ColombiaRiskGeoFeature): PathOptions {
 
   return {
     fillColor,
-    fillOpacity: 0.24,
+    fillOpacity: 0.38,
     color: fillColor,
-    weight: 0.75,
-    opacity: 0.5,
+    weight: 0.85,
+    opacity: 0.65,
   }
 }
 

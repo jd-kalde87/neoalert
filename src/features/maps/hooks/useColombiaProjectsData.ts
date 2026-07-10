@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
 import {
-  COLOMBIA_PROJECTS_AREAS_URL,
   COLOMBIA_PROJECTS_CENTERS_URL,
   COLOMBIA_PROJECTS_MUNICIPIOS_URL,
 } from '@shared/constants/colombia-map.constants'
@@ -18,27 +17,28 @@ export interface ColombiaProjectCenter {
   municipios: number
 }
 
-async function fetchJson<T>(url: string): Promise<T> {
-  const response = await fetch(url)
-  if (!response.ok) {
-    throw new Error(`No se pudo cargar ${url}`)
-  }
-  return response.json() as Promise<T>
-}
-
 export function useColombiaProjectsData(enabled: boolean) {
   return useQuery({
-    queryKey: ['maps', 'colombia-projects'],
+    queryKey: ['maps', 'colombia-projects-points'],
     enabled,
     staleTime: 1000 * 60 * 60 * 24,
     gcTime: 1000 * 60 * 60 * 24,
     queryFn: async () => {
-      const [areas, municipios, centers] = await Promise.all([
-        fetchJson(COLOMBIA_PROJECTS_AREAS_URL),
-        fetchJson(COLOMBIA_PROJECTS_MUNICIPIOS_URL),
-        fetchJson<ColombiaProjectCenter[]>(COLOMBIA_PROJECTS_CENTERS_URL),
+      const [municipiosResponse, centersResponse] = await Promise.all([
+        fetch(COLOMBIA_PROJECTS_MUNICIPIOS_URL),
+        fetch(COLOMBIA_PROJECTS_CENTERS_URL),
       ])
-      return { areas, municipios, centers }
+
+      if (!municipiosResponse.ok || !centersResponse.ok) {
+        throw new Error('No se pudieron cargar los proyectos WSP')
+      }
+
+      const [municipios, centers] = await Promise.all([
+        municipiosResponse.json(),
+        centersResponse.json() as Promise<ColombiaProjectCenter[]>,
+      ])
+
+      return { municipios, centers }
     },
   })
 }

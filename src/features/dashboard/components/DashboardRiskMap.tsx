@@ -26,10 +26,10 @@ export function DashboardRiskMap({
   const selectedRiskId = useMapStore((state) => state.selectedRiskId)
   const setLayerMode = useMapStore((state) => state.setLayerMode)
   const selectRisk = useMapStore((state) => state.selectRisk)
-  const colombiaOverlay = useMapStore((state) => state.colombiaOverlay)
-  const setColombiaOverlay = useMapStore((state) => state.setColombiaOverlay)
+  const showRiskLayer = useMapStore((state) => state.showRiskLayer)
+  const toggleRiskLayer = useMapStore((state) => state.toggleRiskLayer)
   const showProjectsLayer = useMapStore((state) => state.showProjectsLayer)
-  const setShowProjectsLayer = useMapStore((state) => state.setShowProjectsLayer)
+  const toggleProjectsLayer = useMapStore((state) => state.toggleProjectsLayer)
 
   const risks = data?.risks ?? []
 
@@ -52,36 +52,27 @@ export function DashboardRiskMap({
 
       <div className="relative min-h-[280px] flex-1">
         <div className="absolute top-2 right-2 z-[600] flex max-w-[220px] flex-wrap justify-end gap-1">
-          {(
-            [
-              ['none', 'Sin capa'] as const,
-              ['department-risk', COLOMBIA_THEMATIC_LAYERS['department-risk'].shortLabel] as const,
-              ['armed-groups', COLOMBIA_THEMATIC_LAYERS['armed-groups'].shortLabel] as const,
-            ] as const
-          ).map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              className={cn(
-                'rounded border px-2 py-0.5 text-[0.625rem] font-semibold shadow-sm',
-                colombiaOverlay === value
-                  ? 'border-brand-700 bg-brand-900 text-white'
-                  : 'border-slate-200 bg-white/95 text-slate-600',
-              )}
-              onClick={() => setColombiaOverlay(value)}
-            >
-              {label}
-            </button>
-          ))}
+          <button
+            type="button"
+            className={cn(
+              'rounded border px-2 py-0.5 text-[0.625rem] font-semibold shadow-sm',
+              showRiskLayer
+                ? 'border-brand-700 bg-brand-900 text-white'
+                : 'border-slate-200 bg-white/95 text-slate-600',
+            )}
+            onClick={toggleRiskLayer}
+          >
+            {COLOMBIA_THEMATIC_LAYERS['department-risk'].shortLabel}
+          </button>
           <button
             type="button"
             className={cn(
               'rounded border px-2 py-0.5 text-[0.625rem] font-semibold shadow-sm',
               showProjectsLayer
-                ? 'border-blue-600 bg-blue-700 text-white'
+                ? 'border-slate-600 bg-slate-800 text-white'
                 : 'border-slate-200 bg-white/95 text-slate-600',
             )}
-            onClick={() => setShowProjectsLayer(!showProjectsLayer)}
+            onClick={toggleProjectsLayer}
           >
             {COLOMBIA_PROJECTS_LAYER.shortLabel}
           </button>
@@ -99,6 +90,7 @@ export function DashboardRiskMap({
             selectedRiskId={selectedRiskId}
             onLayerChange={setLayerMode}
             onSelectRisk={selectRisk}
+            showOperations={false}
             compact
             enableViewportSync
           />

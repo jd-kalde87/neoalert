@@ -20,7 +20,7 @@ export function MapLayout() {
   const selectedRiskId = useMapStore((state) => state.selectedRiskId)
   const setLayerMode = useMapStore((state) => state.setLayerMode)
   const selectRisk = useMapStore((state) => state.selectRisk)
-  const colombiaOverlay = useMapStore((state) => state.colombiaOverlay)
+  const showRiskLayer = useMapStore((state) => state.showRiskLayer)
   const showProjectsLayer = useMapStore((state) => state.showProjectsLayer)
 
   const [modalOpen, setModalOpen] = useState(false)
@@ -68,6 +68,7 @@ export function MapLayout() {
               onLayerChange={setLayerMode}
               onSelectRisk={selectRisk}
               onRegisterRiskAt={handleMapClick}
+              showOperations={false}
               draftMarker={
                 draftLocation
                   ? { latitude: draftLocation.lat, longitude: draftLocation.lng }
@@ -81,14 +82,14 @@ export function MapLayout() {
           <div className="space-y-3 border-b border-slate-200 bg-white px-4 py-3">
             <MapViewNav />
             <MapLegend compact />
-            {colombiaOverlay !== 'none' ? (
-              <ColombiaOverlayLegend overlay={colombiaOverlay} className="pointer-events-none" />
+            {showRiskLayer ? (
+              <ColombiaOverlayLegend className="pointer-events-none" />
             ) : showProjectsLayer ? (
               <ProjectsLayerLegend className="pointer-events-none" />
             ) : (
               <p className="text-[0.6875rem] leading-relaxed text-slate-500">
-                Active <strong>Riesgo CO</strong> para el mapa de calor municipal, o{' '}
-                <strong>Proyectos</strong> para ver la cobertura WSP 2026.
+                Active <strong>Riesgo CO</strong> para ver niveles municipales, o{' '}
+                <strong>Proyectos</strong> para ubicar los centros WSP 2026.
               </p>
             )}
           </div>

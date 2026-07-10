@@ -48,13 +48,13 @@ export function createRiskZoneIcon(color: string) {
   })
 }
 
-/** Marcador de proyecto WSP en mapa */
-export function createProjectMarkerIcon(color: string) {
+/** Marcador de proyecto WSP — punto sólido negro */
+export function createProjectMarkerIcon(color = '#171717') {
   return L.divIcon({
     className: 'neo-project-marker',
-    html: `<span style="background:${color};width:24px;height:24px;border:2px solid #fff;border-radius:6px;box-shadow:0 2px 6px rgba(15,23,42,.4);display:grid;place-items:center;font-size:11px;font-weight:800;color:#fff">P</span>`,
-    iconSize: [24, 24],
-    iconAnchor: [12, 12],
+    html: `<span style="background:${color};width:10px;height:10px;border-radius:50%;box-shadow:0 1px 3px rgba(15,23,42,.4)"></span>`,
+    iconSize: [10, 10],
+    iconAnchor: [5, 5],
   })
 }
 
